@@ -29,3 +29,4 @@ key/*
 etface_crawler.py
 *.ptc
 __pycache__
+.env

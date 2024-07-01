@@ -4,23 +4,26 @@ from google.cloud import storage
 from google.oauth2.service_account import Credentials
 import oracledb
 from sqlalchemy import create_engine
+from starlette.config import Config
+
+config = Config('.env')
 
 def create_db_engine():
-    STORAGE_NAME = os.environ.get('STORAGE_NAME')
-    WALLET_FILE = os.environ.get('WALLET_FILE')
+    STORAGE_NAME = config('STORAGE_NAME')
+    WALLET_FILE = config('WALLET_FILE')
 
     test = {
-        "type": os.environ.get('GCP_TYPE'),
-        "project_id": os.environ.get('GCP_PROJECT_ID'),
-        "private_key_id": os.environ.get('GCP_PRIVATE_KEY_ID'),
-        "private_key": os.environ.get('GCP_PRIVATE_KEY').replace('\\n', '\n'),
-        "client_email": os.environ.get('GCP_CLIENT_EMAIL'),
-        "client_id": os.environ.get('GCP_CLIENT_ID'),
-        "auth_uri": os.environ.get('GCP_AUTH_URI'),
-        "token_uri": os.environ.get('GCP_TOKEN_URI'),
-        "auth_provider_x509_cert_url": os.environ.get('GCP_PROVIDER_URL'),
-        "client_x509_cert_url": os.environ.get('GCP_CLIENT_URL'),
-        "universe_domain": os.environ.get('GCP_UNIV_DOMAIN')
+        "type": config('GCP_TYPE'),
+        "project_id": config('GCP_PROJECT_ID'),
+        "private_key_id": config('GCP_PRIVATE_KEY_ID'),
+        "private_key": config('GCP_PRIVATE_KEY').replace('\\n', '\n'),
+        "client_email": config('GCP_CLIENT_EMAIL'),
+        "client_id": config('GCP_CLIENT_ID'),
+        "auth_uri": config('GCP_AUTH_URI'),
+        "token_uri": config('GCP_TOKEN_URI'),
+        "auth_provider_x509_cert_url": config('GCP_PROVIDER_URL'),
+        "client_x509_cert_url": config('GCP_CLIENT_URL'),
+        "universe_domain": config('GCP_UNIV_DOMAIN')
     }
 
     credentials = Credentials.from_service_account_info(test)
@@ -37,12 +40,12 @@ def create_db_engine():
         zip_ref.extractall(wallet_location)
 
     connection = oracledb.connect(
-        user=os.environ.get('DB_USER'),
-        password=os.environ.get('DB_PASSWORD'),
-        dsn=os.environ.get('DB_DSN'),
+        user=config('DB_USER'),
+        password=config('DB_PASSWORD'),
+        dsn=config('DB_DSN'),
         config_dir=wallet_location,
         wallet_location=wallet_location,
-        wallet_password=os.environ.get('DB_WALLET_PASSWORD'))
+        wallet_password=config('DB_WALLET_PASSWORD'))
 
     engine = create_engine('oracle+oracledb://', creator=lambda: connection)
 

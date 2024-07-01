@@ -8,7 +8,7 @@ import FinanceDataReader as fdr
 from bs4 import BeautifulSoup
 import pytz
 from datetime import datetime, timedelta
-from config.config import *
+from config import *
 
 # 1. DB연결
 engine = create_db_engine()
