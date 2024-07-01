@@ -20,7 +20,7 @@ telegram_dict = telegramConfig
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",
+    "http://http://43.201.252.164:8000",
 ]
 
 app.add_middleware(
