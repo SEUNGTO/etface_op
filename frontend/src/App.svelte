@@ -31,7 +31,7 @@
   };
 
   const get_code_list = async () => {
-    const url = `http://43.201.252.164/codelist`;
+    const url = `https://43.201.252.164/codelist`;
     const response = await fetch(url);
     const data = await response.json();
     return data;
