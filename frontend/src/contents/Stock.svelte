@@ -30,53 +30,53 @@
     export let type;
 
     const get_entire_new = async () => {
-        const url = `https://43.201.252.164/entire/new`;
+        const url = `http://43.201.252.164/entire/new`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
     };
 
     const get_entire_drop = async () => {
-        const url = `https://43.201.252.164/entire/drop`;
+        const url = `http://43.201.252.164/entire/drop`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
     };
 
     const get_research_data = async () => {
-        const url = `https://43.201.252.164/${type}/research/${code}`;
+        const url = `http://43.201.252.164/${type}/research/${code}`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
     };
     const get_news_data = async () => {
-        const url = `https://43.201.252.164/${type}/news/${code}`;
+        const url = `http://43.201.252.164/${type}/news/${code}`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
     };
 
     const get_telegram_data = async () => {
-        const url = `https://43.201.252.164/${type}/telegram/${code}`;
+        const url = `http://43.201.252.164/${type}/telegram/${code}`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
     };
 
     const get_data_by_order = async (order) => {
-        const url = `https://43.201.252.164/${type}/${code}/${order}`;
+        const url = `http://43.201.252.164/${type}/${code}/${order}`;
         const response = await fetch(url);
         const top10 = await response.json();
         return top10;
     };
     const get_price_data = async () => {
-        const url = `https://43.201.252.164/${type}/${code}/price`;
+        const url = `http://43.201.252.164/${type}/${code}/price`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
     };
     const get_price_describe_data = async () => {
-        const url = `https://43.201.252.164/${type}/${code}/price/describe`;
+        const url = `http://43.201.252.164/${type}/${code}/price/describe`;
         const response = await fetch(url);
         const data = await response.json();
         return data;
