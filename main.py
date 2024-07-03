@@ -410,11 +410,11 @@ def get_stock_of_etf_data(code, order):
         data = data.sort_values('recent_ratio', ascending=False)
 
     elif order == 'increase':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] > 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=False)
     elif order == 'decrease':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] < 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=True)
     elif order == 'new':
