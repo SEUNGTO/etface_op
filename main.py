@@ -40,14 +40,12 @@ def index():
 
 @app.get("/codelist")
 def get_code_list():
-    engine = create_db_engine()
     data = pd.read_sql('SELECT * FROM code_list', engine)
     return data.reset_index(drop=True).to_json(orient='records')
 
 
 @app.get("/entire/new")
 def get_all_new_data():
-    engine = create_db_engine()
     q = f"""
     SELECT etf_name, stock_code, stock_name, recent_quantity, recent_amount, recent_ratio
     FROM etf_base_table
@@ -67,7 +65,6 @@ def get_all_new_data():
 
 @app.get("/entire/drop")
 def get_all_drop_data():
-    engine = create_db_engine()
     q = f"""
     SELECT etf_name, stock_code, stock_name, past_quantity, past_amount, past_ratio
     FROM etf_base_table
@@ -89,7 +86,6 @@ def get_all_drop_data():
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
 def get_etf_data(code):
-    engine = create_db_engine()
     q1 = f"""
     SELECT stock_name, recent_ratio
     FROM etf_base_table
@@ -114,7 +110,6 @@ def get_etf_data(code):
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
 def get_detail_data(code):
-    engine = create_db_engine()
     q1 = f"""
     SELECT 
         stock_code
@@ -159,7 +154,6 @@ def get_detail_data(code):
 # ETF SECTION 2 : telegram
 @app.get('/ETF/telegram/{code}')
 def get_etf_telegram_data(code):
-    engine = create_db_engine()
     q1 = f"""
     SELECT *
     FROM (
@@ -181,7 +175,6 @@ def get_etf_telegram_data(code):
 # ETF SECTION 3 : price
 @app.get('/{_type}/{code}/price')
 def get_code_price(code, _type):
-    engine = create_db_engine()
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -220,7 +213,6 @@ def get_code_price(code, _type):
 
 @app.get('/{_type}/{code}/price/describe')
 def get_code_price(_type, code):
-    engine = create_db_engine()
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -271,7 +263,6 @@ def get_code_price(_type, code):
 
 @app.get("/ETF/{code}/{order}")
 def get_etf_data(code, order):
-    engine = create_db_engine()
     q1 = f"""
     SELECT stock_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
@@ -307,7 +298,6 @@ def get_etf_data(code, order):
 ## Stock function
 @app.get('/Stock/research/{code}')
 def get_stock_research(code):
-    engine = create_db_engine()
     # 나중에 쿼리 튜닝 필요
     data = pd.read_sql('SELECT * FROM research', engine)
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
@@ -354,7 +344,6 @@ def get_stock_research(code):
 ## Stock function
 @app.get('/Stock/news/{code}')
 def get_stock_research(code):
-    engine = create_db_engine()
     url = f'https://openapi.naver.com/v1/search/news.json'
 
     q = f"""
@@ -388,7 +377,6 @@ def get_stock_research(code):
 
 @app.get('/Stock/telegram/{code}')
 def get_stock_telegram_data(code):
-    engine = create_db_engine()
     q1 = f"""
     SELECT *
     FROM (
@@ -409,7 +397,6 @@ def get_stock_telegram_data(code):
 
 @app.get("/Stock/{code}/{order}")
 def get_stock_of_etf_data(code, order):
-    engine = create_db_engine()
     q1 = f"""
     SELECT etf_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
