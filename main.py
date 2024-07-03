@@ -271,11 +271,11 @@ def get_etf_data(code, order):
     data = pd.read_sql(q1, engine)
 
     if order == 'increase':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] > 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=False)
     elif order == 'decrease':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] < 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=True)
     elif order == 'new':
