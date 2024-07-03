@@ -34,10 +34,11 @@ def create_db_engine():
 
     zip_file_path = os.path.join(os.getcwd(), WALLET_FILE)
     wallet_location = os.path.join(os.getcwd(), 'key')
-    os.makedirs(wallet_location, exist_ok=True)
 
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        zip_ref.extractall(wallet_location)
+    if not os.path.exists(wallet_location) :
+        os.makedirs(wallet_location, exist_ok=True)
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+            zip_ref.extractall(wallet_location)
 
     connection = oracledb.connect(
         user=config('DB_USER'),
