@@ -6,7 +6,7 @@ import oracledb
 from sqlalchemy import create_engine
 from starlette.config import Config
 
-config = Config('.env')
+config = Config('../.env')
 
 def create_db_engine():
     STORAGE_NAME = config('STORAGE_NAME')
@@ -49,6 +49,7 @@ def create_db_engine():
         wallet_password=config('DB_WALLET_PASSWORD'))
 
     engine = create_engine('oracle+oracledb://', creator=lambda: connection)
+
     return engine
 
 
