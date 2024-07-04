@@ -301,8 +301,9 @@ def get_stock_research(code):
     data = pd.read_sql('SELECT * FROM research', engine)
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
     data = data.loc[data['종목코드'] == code, cols]
+    check_null = len(data) > data['목표가'].isna().sum()
 
-    if len(data) > 0 :
+    if len(data) > 0 and check_null :
         maxIdx = data['목표가'].astype(float).idxmax()
         maxResearcher = data.loc[maxIdx, '증권사']
         maxPrice = data.loc[maxIdx, '목표가']
@@ -409,11 +410,11 @@ def get_stock_of_etf_data(code, order):
         data = data.sort_values('recent_ratio', ascending=False)
 
     elif order == 'increase':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] > 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=False)
     elif order == 'decrease':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] < 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=True)
     elif order == 'new':
