@@ -311,8 +311,8 @@ def get_stock_research(code):
         data = pd.read_sql('SELECT * FROM research', con = connection)
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
     data = data.loc[data['종목코드'] == code, cols]
-
-    if len(data) > 0 :
+    check_all_null = len(data) > sum(data['목표가'].isna())
+    if len(data) > 0 and check_all_null:
         maxIdx = data['목표가'].astype(float).idxmax()
         maxResearcher = data.loc[maxIdx, '증권사']
         maxPrice = data.loc[maxIdx, '목표가']
