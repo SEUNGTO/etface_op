@@ -35,7 +35,7 @@ app.mount("/assets", StaticFiles(directory="frontend/dist/assets"))
 
 @app.get("/")
 def index():
-    return FileResponse("../frontend/dist/index.html")
+    return FileResponse("frontend/dist/index.html")
 
 @app.get("/codelist")
 def get_code_list():
