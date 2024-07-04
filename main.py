@@ -39,7 +39,8 @@ def index():
 
 @app.get("/codelist")
 def get_code_list():
-    data = pd.read_sql('SELECT * FROM code_list', engine)
+    with engine.connect() as connection :
+        data = pd.read_sql('SELECT * FROM code_list', con = connection)
     return data.reset_index(drop=True).to_json(orient='records')
 
 
