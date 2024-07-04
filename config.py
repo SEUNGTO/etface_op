@@ -48,7 +48,12 @@ def create_db_engine():
         wallet_location=wallet_location,
         wallet_password=config('DB_WALLET_PASSWORD'))
 
-    engine = create_engine('oracle+oracledb://', creator=lambda: connection)
+    engine = create_engine('oracle+oracledb://',
+                           pool_size=10,  # 풀에서 유지할 수 있는 최대 연결 수
+                           max_overflow=20,  # 풀 외에 생성할 수 있는 연결 수
+                           pool_timeout=30,  # 연결을 기다리는 최대 시간
+                           pool_recycle=1800  # 연결을 재활용하기 전에 유지할 시간(초)
+                           , creator=lambda: connection)
 
     return engine
 
