@@ -57,7 +57,10 @@ def get_all_new_data():
     and past_ratio = 0
     """
     with engine.connect() as con: 
+        tran = con.close()
         data = pd.read_sql(q, con = con)
+        tran.commit()
+        tran.close()
     data['recent_quantity'] = data['recent_quantity'].apply(lambda x: f'{x:,.0f}')
     data['recent_amount'] = data['recent_amount'].apply(lambda x: f'{x :,.0f}')
     data['recent_ratio'] = data['recent_ratio'].apply(lambda x: f'{x :.2f}')
@@ -77,7 +80,11 @@ def get_all_drop_data():
     and past_ratio <> 0
     """
     with engine.connect() as con:
+        tran = con.close()
         data = pd.read_sql(q, con = con)
+        tran.commit()
+        tran.close()
+        
     data['past_quantity'] = data['past_quantity'].apply(lambda x: f'{x:,.0f}')
     data['past_amount'] = data['past_amount'].apply(lambda x: f'{x :,.0f}')
     data['past_ratio'] = data['past_ratio'].apply(lambda x: f'{x :.2f}')
@@ -98,7 +105,11 @@ def get_etf_data(code):
     and recent_ratio <> 0
     """
     with engine.connect() as con:
+        tran = con.close()
         data = pd.read_sql(q1, con = con)
+        tran.commit()
+        tran.close()
+        
     data = data.sort_values('recent_ratio', ascending=False)
     data = data.head(10).reset_index(drop=True)
     data.loc['기타', :] = ["기타", 100 - data['recent_ratio'].sum()]
@@ -125,7 +136,11 @@ def get_detail_data(code):
         and recent_ratio <> 0
     """
     with engine.connect() as con:
+        tran = con.close()
         data = pd.read_sql(q1, con = con)
+        tran.commit()
+        tran.close()
+        
 
     q2 = """
     SELECT  stock_code
@@ -138,7 +153,11 @@ def get_detail_data(code):
     FROM etf_deposit_detail
     """
     with engine.connect() as con:
+        tran = con.close()
         research = pd.read_sql(q2, con = con)
+        tran.commit()
+        tran.close()
+        
 
     data = data.merge(research, how='left', on='stock_code')
     data = data.sort_values('recent_ratio', ascending=False)
@@ -173,7 +192,11 @@ def get_etf_telegram_data(code):
     WHERE ROWNUM <= 5
     """
     with engine.connect() as con:
+        tran = con.close()
         stocks = pd.read_sql(q1, con = con)['stock_name'].tolist()
+        tran.commit()
+        tran.close()
+        
     data = clean_telegram_data(stocks)
 
     return {'list': stocks,
@@ -200,7 +223,11 @@ def get_code_price(code, _type):
         WHERE code = '{code}'
         """
         with engine.connect() as con:
+            tran = con.close()
             target = pd.read_sql(q, con = con)
+            tran.commit()
+            tran.close()
+            
         target['target'] = standardize_price(target['target'])
     elif _type == "Stock":
         q = f"""
@@ -209,7 +236,10 @@ def get_code_price(code, _type):
         WHERE code = '{code}'
         """
         with engine.connect() as con:
+            tran = con.close()
             target = pd.read_sql(q, con = con)
+            tran.commit()
+            tran.close()
 
     if target.shape[0] != 0:
         target = target.loc[target['code'] == code, ['Date', 'target']]
@@ -242,7 +272,11 @@ def get_code_price(_type, code):
         WHERE code = '{code}' 
         """
         with engine.connect() as con:
+            tran = con.close()
             avg_target = pd.read_sql(q, con = con).values.max()
+            tran.commit()
+            tran.close()
+            
 
         if avg_target is not None :
             target_ratio = current / avg_target * 100
@@ -280,7 +314,10 @@ def get_etf_data(code, order):
     WHERE etf_code = '{code}'
     """
     with engine.connect() as con:
+        tran = con.close()
         data = pd.read_sql(q1, con = con)
+        tran.commit()
+        tran.close()
 
     if order == 'increase':
         ind = (data['recent_ratio'] != 0)
@@ -312,7 +349,11 @@ def get_etf_data(code, order):
 def get_stock_research(code):
     # 나중에 쿼리 튜닝 필요
     with engine.connect() as con:
+        tran = con.close()
         data = pd.read_sql('SELECT * FROM research', con = con)
+        tran.commit()
+        tran.close()
+        
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
     data = data.loc[data['종목코드'] == code, cols]
     check_null = len(data) > data['목표가'].isna().sum()
@@ -366,7 +407,12 @@ def get_stock_research(code):
             WHERE stock_code = '{code}')
     WHERE ROWNUM <= 1
     """
-    keyword = pd.read_sql(q, engine)
+    with engine.connect() as con :
+        tran = con.begin()
+        keyword = pd.read_sql(q, con = con)
+        tran.commit()
+        tran.close()
+
     if len(keyword) > 0 :
         keyword = keyword['stock_name'].to_list()[0]
     
@@ -406,7 +452,10 @@ def get_stock_telegram_data(code):
     WHERE ROWNUM <= 1
     """
     with engine.connect() as con:
+        tran = con.begin()
         stocks = pd.read_sql(q1, con = con)['stock_name'].tolist()
+        tran.commit()
+        tran.close()
     data = clean_telegram_data(stocks)
 
     return data.reset_index(drop=True).to_json(orient='records')
@@ -420,7 +469,10 @@ def get_stock_of_etf_data(code, order):
     WHERE stock_code = '{code}'
     """
     with engine.connect() as con:
+        tran = con.begin()
         data = pd.read_sql(q1, con = con)
+        tran.commit()
+        tran.close()
 
     if order == 'largeRatio':
         ind = (data['recent_ratio'] != 0)
