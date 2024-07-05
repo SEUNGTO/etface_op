@@ -394,7 +394,7 @@ def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
         )
     WHERE ROWNUM <= 1
     """
-    stock = pd.read_sql(q1, con = db.connection())['stock_name'].tolist()
+    stocks = pd.read_sql(q1, con = db.connection())['stock_name'].tolist()
     data = clean_telegram_data(stocks)
 
     return data.reset_index(drop=True).to_json(orient='records')
