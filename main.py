@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
@@ -38,17 +38,18 @@ def index():
     return FileResponse("frontend/dist/index.html")
 
 @app.get("/codelist")
-def get_code_list():
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql('SELECT * FROM code_list', con = con)
-        tran.commit()
-        tran.close()
+def get_code_list(db: Session = Depends(get_db)):
+    # with engine.connect() as con:
+    #     tran = con.begin()
+    #     data = pd.read_sql('SELECT * FROM code_list', con = con)
+    #     tran.commit()
+    #     tran.close()
+    data = pd.read_sql('SELECT * FROM code_list', con = db.connection())
     return data.reset_index(drop=True).to_json(orient='records')
 
 
 @app.get("/entire/new")
-def get_all_new_data():
+def get_all_new_data(db: Session = Depends(get_db)):
     q = f"""
     SELECT etf_name, stock_code, stock_name, recent_quantity, recent_amount, recent_ratio
     FROM etf_base_table
@@ -56,11 +57,12 @@ def get_all_new_data():
     and recent_ratio <> 0
     and past_ratio = 0
     """
-    with engine.connect() as con: 
-        tran = con.begin()
-        data = pd.read_sql(q, con = con)
-        tran.commit()
-        tran.close()
+    # with engine.connect() as con: 
+    #     tran = con.begin()
+    #     data = pd.read_sql(q, con = con)
+    #     tran.commit()
+    #     tran.close()
+    data = pd.read_sql(q, con = db.connection())
     data['recent_quantity'] = data['recent_quantity'].apply(lambda x: f'{x:,.0f}')
     data['recent_amount'] = data['recent_amount'].apply(lambda x: f'{x :,.0f}')
     data['recent_ratio'] = data['recent_ratio'].apply(lambda x: f'{x :.2f}')
