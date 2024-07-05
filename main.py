@@ -2,13 +2,15 @@ from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+from config import *
 import requests
 import pandas as pd
 import FinanceDataReader as fdr
 from bs4 import BeautifulSoup
 import pytz
 from datetime import datetime, timedelta
-from config import *
+
 
 # 1. DB연결
 # engine = create_db_engine()
