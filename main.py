@@ -40,7 +40,10 @@ def index():
 @app.get("/codelist")
 def get_code_list():
     with engine.connect() as con:
+        tran = con.begin()
         data = pd.read_sql('SELECT * FROM code_list', con = con)
+        tran.commit()
+        tran.close()
     return data.reset_index(drop=True).to_json(orient='records')
 
 
