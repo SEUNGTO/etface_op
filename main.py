@@ -57,7 +57,7 @@ def get_all_new_data():
     and past_ratio = 0
     """
     with engine.connect() as con: 
-        tran = con.close()
+        tran = con.begin()
         data = pd.read_sql(q, con = con)
         tran.commit()
         tran.close()
@@ -80,7 +80,7 @@ def get_all_drop_data():
     and past_ratio <> 0
     """
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         data = pd.read_sql(q, con = con)
         tran.commit()
         tran.close()
@@ -105,7 +105,7 @@ def get_etf_data(code):
     and recent_ratio <> 0
     """
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         data = pd.read_sql(q1, con = con)
         tran.commit()
         tran.close()
@@ -136,7 +136,7 @@ def get_detail_data(code):
         and recent_ratio <> 0
     """
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         data = pd.read_sql(q1, con = con)
         tran.commit()
         tran.close()
@@ -153,7 +153,7 @@ def get_detail_data(code):
     FROM etf_deposit_detail
     """
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         research = pd.read_sql(q2, con = con)
         tran.commit()
         tran.close()
@@ -192,7 +192,7 @@ def get_etf_telegram_data(code):
     WHERE ROWNUM <= 5
     """
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         stocks = pd.read_sql(q1, con = con)['stock_name'].tolist()
         tran.commit()
         tran.close()
@@ -223,7 +223,7 @@ def get_code_price(code, _type):
         WHERE code = '{code}'
         """
         with engine.connect() as con:
-            tran = con.close()
+            tran = con.begin()
             target = pd.read_sql(q, con = con)
             tran.commit()
             tran.close()
@@ -236,7 +236,7 @@ def get_code_price(code, _type):
         WHERE code = '{code}'
         """
         with engine.connect() as con:
-            tran = con.close()
+            tran = con.begin()
             target = pd.read_sql(q, con = con)
             tran.commit()
             tran.close()
@@ -272,7 +272,7 @@ def get_code_price(_type, code):
         WHERE code = '{code}' 
         """
         with engine.connect() as con:
-            tran = con.close()
+            tran = con.begin()
             avg_target = pd.read_sql(q, con = con).values.max()
             tran.commit()
             tran.close()
@@ -314,7 +314,7 @@ def get_etf_data(code, order):
     WHERE etf_code = '{code}'
     """
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         data = pd.read_sql(q1, con = con)
         tran.commit()
         tran.close()
@@ -349,7 +349,7 @@ def get_etf_data(code, order):
 def get_stock_research(code):
     # 나중에 쿼리 튜닝 필요
     with engine.connect() as con:
-        tran = con.close()
+        tran = con.begin()
         data = pd.read_sql('SELECT * FROM research', con = con)
         tran.commit()
         tran.close()
