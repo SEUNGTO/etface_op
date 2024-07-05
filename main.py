@@ -41,11 +41,6 @@ def index():
 
 @app.get("/codelist")
 def get_code_list(db: Session = Depends(get_db)):
-    # with engine.connect() as con:
-    #     tran = con.begin()
-    #     data = pd.read_sql('SELECT * FROM code_list', con = con)
-    #     tran.commit()
-    #     tran.close()
     data = pd.read_sql('SELECT * FROM code_list', con = db.connection())
     return data.reset_index(drop=True).to_json(orient='records')
 
@@ -59,11 +54,6 @@ def get_all_new_data(db: Session = Depends(get_db)):
     and recent_ratio <> 0
     and past_ratio = 0
     """
-    # with engine.connect() as con: 
-    #     tran = con.begin()
-    #     data = pd.read_sql(q, con = con)
-    #     tran.commit()
-    #     tran.close()
     data = pd.read_sql(q, con = db.connection())
     data['recent_quantity'] = data['recent_quantity'].apply(lambda x: f'{x:,.0f}')
     data['recent_amount'] = data['recent_amount'].apply(lambda x: f'{x :,.0f}')
@@ -75,7 +65,7 @@ def get_all_new_data(db: Session = Depends(get_db)):
 
 
 @app.get("/entire/drop")
-def get_all_drop_data():
+def get_all_drop_data(db: Session = Depends(get_db)):
     q = f"""
     SELECT etf_name, stock_code, stock_name, past_quantity, past_amount, past_ratio
     FROM etf_base_table
@@ -83,12 +73,8 @@ def get_all_drop_data():
     and recent_ratio = 0
     and past_ratio <> 0
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql(q, con = con)
-        tran.commit()
-        tran.close()
-        
+
+    data = pd.read_sql(q, con = db.connection())
     data['past_quantity'] = data['past_quantity'].apply(lambda x: f'{x:,.0f}')
     data['past_amount'] = data['past_amount'].apply(lambda x: f'{x :,.0f}')
     data['past_ratio'] = data['past_ratio'].apply(lambda x: f'{x :.2f}')
@@ -101,19 +87,16 @@ def get_all_drop_data():
 
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
-def get_etf_data(code):
+      
+def get_etf_data(db: Session = Depends(get_db), code: str):
     q1 = f"""
     SELECT stock_name, recent_ratio
     FROM etf_base_table
     WHERE etf_code = '{code}'
     and recent_ratio <> 0
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql(q1, con = con)
-        tran.commit()
-        tran.close()
-        
+
+    data = pd.read_sql(q1, con = db.connection())
     data = data.sort_values('recent_ratio', ascending=False)
     data = data.head(10).reset_index(drop=True)
     data.loc['기타', :] = ["기타", 100 - data['recent_ratio'].sum()]
@@ -129,7 +112,7 @@ def get_etf_data(code):
 
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
-def get_detail_data(code):
+def get_detail_data(db: Session = Depends(get_db), code:str):
     q1 = f"""
     SELECT 
         stock_code
@@ -139,12 +122,7 @@ def get_detail_data(code):
     WHERE etf_code = '{code}'
         and recent_ratio <> 0
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql(q1, con = con)
-        tran.commit()
-        tran.close()
-        
+    data = pd.read_sql(q1, con = db.connection())
 
     q2 = """
     SELECT  stock_code
@@ -156,12 +134,7 @@ def get_detail_data(code):
             ,report_link
     FROM etf_deposit_detail
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        research = pd.read_sql(q2, con = con)
-        tran.commit()
-        tran.close()
-        
+    research = pd.read_sql(q2, con = db.connection())
 
     data = data.merge(research, how='left', on='stock_code')
     data = data.sort_values('recent_ratio', ascending=False)
@@ -182,7 +155,7 @@ def get_detail_data(code):
 
 # ETF SECTION 2 : telegram
 @app.get('/ETF/telegram/{code}')
-def get_etf_telegram_data(code):
+def get_etf_telegram_data(db: Session = Depends(get_db), code: str):
     q1 = f"""
     SELECT *
     FROM (
@@ -195,20 +168,14 @@ def get_etf_telegram_data(code):
         )
     WHERE ROWNUM <= 5
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        stocks = pd.read_sql(q1, con = con)['stock_name'].tolist()
-        tran.commit()
-        tran.close()
-        
+    stock = pd.read_sql(q1, con = db.connection())['stock_name'].tolist()
     data = clean_telegram_data(stocks)
-
     return {'list': stocks,
             'data': data.reset_index(drop=True).to_json(orient='records')}
 
 # ETF SECTION 3 : price
 @app.get('/{_type}/{code}/price')
-def get_code_price(code, _type):
+def get_code_price(db: Session = Depends(get_db), code: str, _type: str):
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -226,12 +193,7 @@ def get_code_price(code, _type):
         FROM etf_target
         WHERE code = '{code}'
         """
-        with engine.connect() as con:
-            tran = con.begin()
-            target = pd.read_sql(q, con = con)
-            tran.commit()
-            tran.close()
-            
+        target = pd.read_sql(q, con = db.connection())
         target['target'] = standardize_price(target['target'])
     elif _type == "Stock":
         q = f"""
@@ -239,11 +201,7 @@ def get_code_price(code, _type):
         FROM stock_target
         WHERE code = '{code}'
         """
-        with engine.connect() as con:
-            tran = con.begin()
-            target = pd.read_sql(q, con = con)
-            tran.commit()
-            tran.close()
+        target = pd.read_sql(q, con=db.connection())
 
     if target.shape[0] != 0:
         target = target.loc[target['code'] == code, ['Date', 'target']]
@@ -255,7 +213,7 @@ def get_code_price(code, _type):
     return price.to_dict()
 
 @app.get('/{_type}/{code}/price/describe')
-def get_code_price(_type, code):
+def get_code_price(db: Session = Depends(get_db), code: str, _type: str):
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -275,12 +233,7 @@ def get_code_price(_type, code):
         FROM stock_target
         WHERE code = '{code}' 
         """
-        with engine.connect() as con:
-            tran = con.begin()
-            avg_target = pd.read_sql(q, con = con).values.max()
-            tran.commit()
-            tran.close()
-            
+        avg_target = pd.read_sql(q, con = db.connection()).values.max()
 
         if avg_target is not None :
             target_ratio = current / avg_target * 100
@@ -311,24 +264,20 @@ def get_code_price(_type, code):
 
 
 @app.get("/ETF/{code}/{order}")
-def get_etf_data(code, order):
+def get_etf_data(db: Session = Depends(get_db), code: str, order: str):
     q1 = f"""
     SELECT stock_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
     WHERE etf_code = '{code}'
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql(q1, con = con)
-        tran.commit()
-        tran.close()
+    data = pd.read_sql(q1, con = db.connection())
 
     if order == 'increase':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] > 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=False)
     elif order == 'decrease':
-        ind = (data['recent_ratio'] != 0)
+        ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] < 0)
         data = data.loc[ind, :]
         data = data.sort_values('diff_ratio', ascending=True)
     elif order == 'new':
@@ -350,14 +299,9 @@ def get_etf_data(code, order):
 
 ## Stock function
 @app.get('/Stock/research/{code}')
-def get_stock_research(code):
+def get_stock_research(db: Session = Depends(get_db), code: str):
     # 나중에 쿼리 튜닝 필요
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql('SELECT * FROM research', con = con)
-        tran.commit()
-        tran.close()
-        
+    data = pd.read_sql('SELECT * FROM research', con = db.connection())
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
     data = data.loc[data['종목코드'] == code, cols]
     check_null = len(data) > data['목표가'].isna().sum()
@@ -401,9 +345,8 @@ def get_stock_research(code):
 
 ## Stock function
 @app.get('/Stock/news/{code}')
-def get_stock_research(code):
+def get_stock_research(db: Session = Depends(get_db), code: str):
     url = f'https://openapi.naver.com/v1/search/news.json'
-
     q = f"""
     SELECT *
     FROM (SELECT stock_name
@@ -411,11 +354,7 @@ def get_stock_research(code):
             WHERE stock_code = '{code}')
     WHERE ROWNUM <= 1
     """
-    with engine.connect() as con :
-        tran = con.begin()
-        keyword = pd.read_sql(q, con = con)
-        tran.commit()
-        tran.close()
+    keyword = pd.read_sql(q, con = db.connection())
 
     if len(keyword) > 0 :
         keyword = keyword['stock_name'].to_list()[0]
@@ -442,7 +381,7 @@ def get_stock_research(code):
 
 
 @app.get('/Stock/telegram/{code}')
-def get_stock_telegram_data(code):
+def get_stock_telegram_data(db: Session = Depends(get_db), code: str):
     q1 = f"""
     SELECT *
     FROM (
@@ -455,28 +394,20 @@ def get_stock_telegram_data(code):
         )
     WHERE ROWNUM <= 1
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        stocks = pd.read_sql(q1, con = con)['stock_name'].tolist()
-        tran.commit()
-        tran.close()
+    stock = pd.read_sql(q1, con = db.connection())['stock_name'].tolist()
     data = clean_telegram_data(stocks)
 
     return data.reset_index(drop=True).to_json(orient='records')
 
 
 @app.get("/Stock/{code}/{order}")
-def get_stock_of_etf_data(code, order):
+def get_stock_of_etf_data(db: Session = Depends(get_db), code: str, order: str):
     q1 = f"""
     SELECT etf_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
     WHERE stock_code = '{code}'
     """
-    with engine.connect() as con:
-        tran = con.begin()
-        data = pd.read_sql(q1, con = con)
-        tran.commit()
-        tran.close()
+    data = pd.read_sql(q1, con = db.connection())
 
     if order == 'largeRatio':
         ind = (data['recent_ratio'] != 0)
