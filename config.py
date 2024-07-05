@@ -1,17 +1,19 @@
 import os
 import zipfile
+import oracledb
 from google.cloud import storage
 from google.oauth2.service_account import Credentials
-import oracledb
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 from starlette.config import Config
 
 config = Config('.env')
 
-def create_db_engine():
-    STORAGE_NAME = config('STORAGE_NAME')
-    WALLET_FILE = config('WALLET_FILE')
+STORAGE_NAME = config('STORAGE_NAME')
+WALLET_FILE = config('WALLET_FILE')
+wallet_location = os.path.join(os.getcwd(), 'key')
 
+if not os.path.exists(WALLET_FILE) :
     test = {
         "type": config('GCP_TYPE'),
         "project_id": config('GCP_PROJECT_ID'),
@@ -33,26 +35,34 @@ def create_db_engine():
     blob.download_to_filename(WALLET_FILE)
 
     zip_file_path = os.path.join(os.getcwd(), WALLET_FILE)
-    wallet_location = os.path.join(os.getcwd(), 'key')
 
-    if not os.path.exists(wallet_location) :
+
+    if not os.path.exists(wallet_location):
         os.makedirs(wallet_location, exist_ok=True)
-        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-            zip_ref.extractall(wallet_location)
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(wallet_location)
 
-    connection = oracledb.connect(
-        user=config('DB_USER'),
-        password=config('DB_PASSWORD'),
-        dsn=config('DB_DSN'),
-        config_dir=wallet_location,
-        wallet_location=wallet_location,
-        wallet_password=config('DB_WALLET_PASSWORD'))
+connection = oracledb.connect(
+    user=config('DB_USER'),
+    password=config('DB_PASSWORD'),
+    dsn=config('DB_DSN'),
+    config_dir=wallet_location,
+    wallet_location=wallet_location,
+    wallet_password=config('DB_WALLET_PASSWORD'))
 
-    engine = create_engine('oracle+oracledb://',
-                           pool_pre_ping=True,
-                           creator=lambda: connection)
+engine = create_engine('oracle+oracledb://',
+                       pool_pre_ping=True,
+                       creator=lambda: connection)
 
-    return engine
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 telegramConfig = {
