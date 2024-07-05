@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from config import *
 
 # 1. DB연결
-engine = create_db_engine()
+# engine = create_db_engine()
 
 # 2. 기본 설정값
 telegram_dict = telegramConfig
