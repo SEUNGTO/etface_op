@@ -88,7 +88,7 @@ def get_all_drop_data(db: Session = Depends(get_db)):
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
       
-def get_etf_data(db: Session = Depends(get_db), code: str):
+def get_etf_data(db: Session = Depends(get_db), code: str = ""):
     q1 = f"""
     SELECT stock_name, recent_ratio
     FROM etf_base_table
@@ -112,7 +112,7 @@ def get_etf_data(db: Session = Depends(get_db), code: str):
 
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
-def get_detail_data(db: Session = Depends(get_db), code:str):
+def get_detail_data(db: Session = Depends(get_db), code:str = ""):
     q1 = f"""
     SELECT 
         stock_code
@@ -155,7 +155,7 @@ def get_detail_data(db: Session = Depends(get_db), code:str):
 
 # ETF SECTION 2 : telegram
 @app.get('/ETF/telegram/{code}')
-def get_etf_telegram_data(db: Session = Depends(get_db), code: str):
+def get_etf_telegram_data(db: Session = Depends(get_db), code: str = ""):
     q1 = f"""
     SELECT *
     FROM (
@@ -175,7 +175,7 @@ def get_etf_telegram_data(db: Session = Depends(get_db), code: str):
 
 # ETF SECTION 3 : price
 @app.get('/{_type}/{code}/price')
-def get_code_price(db: Session = Depends(get_db), code: str, _type: str):
+def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = ""):
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -213,7 +213,7 @@ def get_code_price(db: Session = Depends(get_db), code: str, _type: str):
     return price.to_dict()
 
 @app.get('/{_type}/{code}/price/describe')
-def get_code_price(db: Session = Depends(get_db), code: str, _type: str):
+def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = ""):
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -264,7 +264,7 @@ def get_code_price(db: Session = Depends(get_db), code: str, _type: str):
 
 
 @app.get("/ETF/{code}/{order}")
-def get_etf_data(db: Session = Depends(get_db), code: str, order: str):
+def get_etf_data(db: Session = Depends(get_db), code: str = "", order: str = ""):
     q1 = f"""
     SELECT stock_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
@@ -299,7 +299,7 @@ def get_etf_data(db: Session = Depends(get_db), code: str, order: str):
 
 ## Stock function
 @app.get('/Stock/research/{code}')
-def get_stock_research(db: Session = Depends(get_db), code: str):
+def get_stock_research(db: Session = Depends(get_db), code: str = ""):
     # 나중에 쿼리 튜닝 필요
     data = pd.read_sql('SELECT * FROM research', con = db.connection())
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
@@ -345,7 +345,7 @@ def get_stock_research(db: Session = Depends(get_db), code: str):
 
 ## Stock function
 @app.get('/Stock/news/{code}')
-def get_stock_research(db: Session = Depends(get_db), code: str):
+def get_stock_research(db: Session = Depends(get_db), code: str = ""):
     url = f'https://openapi.naver.com/v1/search/news.json'
     q = f"""
     SELECT *
@@ -381,7 +381,7 @@ def get_stock_research(db: Session = Depends(get_db), code: str):
 
 
 @app.get('/Stock/telegram/{code}')
-def get_stock_telegram_data(db: Session = Depends(get_db), code: str):
+def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
     q1 = f"""
     SELECT *
     FROM (
@@ -401,7 +401,7 @@ def get_stock_telegram_data(db: Session = Depends(get_db), code: str):
 
 
 @app.get("/Stock/{code}/{order}")
-def get_stock_of_etf_data(db: Session = Depends(get_db), code: str, order: str):
+def get_stock_of_etf_data(db: Session = Depends(get_db), code: str = "", order: str = ""):
     q1 = f"""
     SELECT etf_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
