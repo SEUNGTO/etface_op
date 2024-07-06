@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from starlette.config import Config
 
+oracledb.init_oracle_client()
 config = Config('.env')
 
 STORAGE_NAME = config('STORAGE_NAME')
