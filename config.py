@@ -52,24 +52,24 @@ pool = oracledb.create_pool(
     wallet_password=config('DB_WALLET_PASSWORD'),
     min=1, max = 5, increment=1)
 
-
-Base = declarative_base()
-
-def get_db():
-    connection = pool.acquire()
-    engine = create_engine('oracle+oracledb://',
+connection = pool.acquire()
+engine = create_engine('oracle+oracledb://',
                            pool_pre_ping=True,
                            creator=lambda: connection)
-    SessionLocal = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(bind=engine)
+# Base = declarative_base()
+
+def get_db():
+
     db = SessionLocal()
     try:
         db.execute(text('SELECT * FROM code_list'))
         db.close()
+        db = SessionLocal()
     except exc.DBAPIError as e:
         if e.connection_invalidated:
             print('connection was invalidated')
-    db.close()
-    db = SessionLocal()
+        db = SessionLocal()
     try:
         yield db
     finally:
