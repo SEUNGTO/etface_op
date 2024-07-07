@@ -42,14 +42,6 @@ if not os.path.exists(WALLET_FILE) :
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
         zip_ref.extractall(wallet_location)
 
-# connection = oracledb.connect(
-#     user=config('DB_USER'),
-#     password=config('DB_PASSWORD'),
-#     dsn=config('DB_DSN'),
-#     config_dir=wallet_location,
-#     wallet_location=wallet_location,
-#     wallet_password=config('DB_WALLET_PASSWORD'))
-
 pool = oracledb.create_pool(
     user=config('DB_USER'),
     password=config('DB_PASSWORD'),
@@ -64,7 +56,7 @@ engine = create_engine('oracle+oracledb://',
                        pool_pre_ping=True,
                        creator=lambda: connection)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
 def get_db():
