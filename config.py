@@ -62,19 +62,20 @@ SessionLocal = sessionmaker(bind=engine)
 def get_db():
 
     db = SessionLocal()
-    try:
-        db.execute(text('SELECT * FROM code_list'))
-        db.close()
-        db = SessionLocal()
-    except exc.DBAPIError as e:
-        if e.connection_invalidated:
-            print('connection was invalidated')
-    db = SessionLocal()
+#    try:
+#        db.execute(text('SELECT * FROM code_list'))
+#        db.close()
+#        db = SessionLocal()
+#    except exc.DBAPIError as e:
+#        if e.connection_invalidated:
+#            print('connection was invalidated')
+#    db = SessionLocal()
 
     try:
         yield db
     except :
         db.close()
+        del db
         db = SessionLocal()
         yield db
     finally:
