@@ -67,7 +67,10 @@ def get_db():
     except exc.DBAPIError as e:
         if e.connection_invalidated:
             print('connection was invalidated')
-    db.connection()
+    except :
+        db = SessionLocal()
+
+    db = SessionLocal()
     try:
         yield db
     finally:
