@@ -69,13 +69,13 @@ def get_db():
     except exc.DBAPIError as e:
         if e.connection_invalidated:
             print('connection was invalidated')
-    except :
-        connection = pool.acquire()
-        engine = create_engine('oracle+oracledb://',
-                           pool_pre_ping=True,
-                           creator=lambda: connection)
-        SessionLocal = sessionmaker(bind=engine)
-        db = SessionLocal()
+    # except :
+    #     connection = pool.acquire()
+    #     engine = create_engine('oracle+oracledb://',
+    #                        pool_pre_ping=True,
+    #                        creator=lambda: connection)
+    #     SessionLocal = sessionmaker(bind=engine)
+    #     db = SessionLocal()
 
     try:
         yield db
