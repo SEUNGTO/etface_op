@@ -3,9 +3,10 @@ import zipfile
 import oracledb
 from google.cloud import storage
 from google.oauth2.service_account import Credentials
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, exc
 from sqlalchemy.orm import sessionmaker, declarative_base
 from starlette.config import Config
+
 
 config = Config('.env')
 
@@ -50,17 +51,23 @@ pool = oracledb.create_pool(
     wallet_location=wallet_location,
     wallet_password=config('DB_WALLET_PASSWORD'),
     min=1, max = 5, increment=1)
-connection = pool.acquire()
 
+connection = pool.acquire()
 engine = create_engine('oracle+oracledb://',
                        pool_pre_ping=True,
                        creator=lambda: connection)
-
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
 def get_db():
     db = SessionLocal()
+    try:
+        db.execute(text('SELECT * FROM code_list'))
+        db.close()
+    except exc.DBAPIError as e:
+        if e.connection_invalidated:
+            print('connection was invalidated')
+    db.connection()
     try:
         yield db
     finally:
