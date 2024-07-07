@@ -10,11 +10,11 @@ from starlette.config import Config
 
 config = Config('.env')
 
-STORAGE_NAME = config('STORAGE_NAME')
-WALLET_FILE = config('WALLET_FILE')
 wallet_location = os.path.join(os.getcwd(), 'key')
 
 if not os.path.exists(WALLET_FILE) :
+    STORAGE_NAME = config('STORAGE_NAME')
+    WALLET_FILE = config('WALLET_FILE')
     test = {
         "type": config('GCP_TYPE'),
         "project_id": config('GCP_PROJECT_ID'),
@@ -52,14 +52,15 @@ pool = oracledb.create_pool(
     wallet_password=config('DB_WALLET_PASSWORD'),
     min=1, max = 5, increment=1)
 
-connection = pool.acquire()
-engine = create_engine('oracle+oracledb://',
-                       pool_pre_ping=True,
-                       creator=lambda: connection)
-SessionLocal = sessionmaker(bind=engine)
+
 Base = declarative_base()
 
 def get_db():
+    connection = pool.acquire()
+    engine = create_engine('oracle+oracledb://',
+                           pool_pre_ping=True,
+                           creator=lambda: connection)
+    SessionLocal = sessionmaker(bind=engine)
     db = SessionLocal()
     try:
         db.execute(text('SELECT * FROM code_list'))
@@ -67,9 +68,7 @@ def get_db():
     except exc.DBAPIError as e:
         if e.connection_invalidated:
             print('connection was invalidated')
-    except :
-        db = SessionLocal()
-
+    db.close()
     db = SessionLocal()
     try:
         yield db
