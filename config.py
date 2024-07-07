@@ -11,10 +11,10 @@ from starlette.config import Config
 config = Config('.env')
 
 wallet_location = os.path.join(os.getcwd(), 'key')
+STORAGE_NAME = config('STORAGE_NAME')
+WALLET_FILE = config('WALLET_FILE')
 
 if not os.path.exists(WALLET_FILE) :
-    STORAGE_NAME = config('STORAGE_NAME')
-    WALLET_FILE = config('WALLET_FILE')
     test = {
         "type": config('GCP_TYPE'),
         "project_id": config('GCP_PROJECT_ID'),
