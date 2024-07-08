@@ -59,11 +59,14 @@ engine = create_engine('oracle+oracledb://',
 SessionLocal = sessionmaker(bind=engine)
 
 def get_db():
+    print('get_db() 시작')
     db = SessionLocal()
     try:
         pd.read_sql('SELECT 1', db.connection())
+        print('이상없이 yield db 실행')
         yield db
     except :
+        print('오류 발생 후 db생성 로직 작동')
         db.close()
         del db
         db = SessionLocal()
