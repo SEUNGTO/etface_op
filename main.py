@@ -12,10 +12,7 @@ import pytz
 from datetime import datetime, timedelta
 
 
-# 1. DB연결
-# engine = create_db_engine()
-
-# 2. 기본 설정값
+# 1. 기본 설정값
 telegram_dict = telegramConfig
 
 # 2. 앱 생성
@@ -41,12 +38,14 @@ def index():
 
 @app.get("/codelist")
 def get_code_list(db: Session = Depends(get_db)):
+    print('get_code_list() 실행', datetime.now())
     data = pd.read_sql('SELECT * FROM code_list', con = db.connection())
     return data.reset_index(drop=True).to_json(orient='records')
 
 
 @app.get("/entire/new")
 def get_all_new_data(db: Session = Depends(get_db)):
+    print('get_all_new_data() 실행', datetime.now())
     q = f"""
     SELECT etf_name, stock_code, stock_name, recent_quantity, recent_amount, recent_ratio
     FROM etf_base_table
@@ -66,6 +65,7 @@ def get_all_new_data(db: Session = Depends(get_db)):
 
 @app.get("/entire/drop")
 def get_all_drop_data(db: Session = Depends(get_db)):
+    print('get_all_drop_data() 실행', datetime.now())
     q = f"""
     SELECT etf_name, stock_code, stock_name, past_quantity, past_amount, past_ratio
     FROM etf_base_table
@@ -89,6 +89,7 @@ def get_all_drop_data(db: Session = Depends(get_db)):
 @app.get("/ETF/{code}/top10")
       
 def get_etf_data(db: Session = Depends(get_db), code: str = ""):
+    print('get_etf_data() 실행', datetime.now())
     q1 = f"""
     SELECT stock_name, recent_ratio
     FROM etf_base_table
@@ -113,6 +114,7 @@ def get_etf_data(db: Session = Depends(get_db), code: str = ""):
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
 def get_detail_data(db: Session = Depends(get_db), code:str = ""):
+    print('get_detail_data() 실행', datetime.now())
     q1 = f"""
     SELECT 
         stock_code
@@ -156,6 +158,7 @@ def get_detail_data(db: Session = Depends(get_db), code:str = ""):
 # ETF SECTION 2 : telegram
 @app.get('/ETF/telegram/{code}')
 def get_etf_telegram_data(db: Session = Depends(get_db), code: str = ""):
+    print('get_etf_telegram_data() 실행', datetime.now())
     q1 = f"""
     SELECT *
     FROM (
@@ -176,6 +179,7 @@ def get_etf_telegram_data(db: Session = Depends(get_db), code: str = ""):
 # ETF SECTION 3 : price
 @app.get('/{_type}/{code}/price')
 def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = ""):
+    print('get_code_price() 실행', datetime.now())
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -213,7 +217,8 @@ def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = "
     return price.to_dict()
 
 @app.get('/{_type}/{code}/price/describe')
-def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = ""):
+def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type: str = ""):
+    print('get_code_price_describe() 실행', datetime.now())
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
     today = now.strftime('%Y-%m-%d')
@@ -264,7 +269,8 @@ def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = "
 
 
 @app.get("/ETF/{code}/{order}")
-def get_etf_data(db: Session = Depends(get_db), code: str = "", order: str = ""):
+def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: str = ""):
+    print('get_etf_data_by_order() 실행', datetime.now())
     q1 = f"""
     SELECT stock_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
@@ -300,6 +306,7 @@ def get_etf_data(db: Session = Depends(get_db), code: str = "", order: str = "")
 ## Stock function
 @app.get('/Stock/research/{code}')
 def get_stock_research(db: Session = Depends(get_db), code: str = ""):
+    print('get_stock_research() 실행', datetime.now())
     # 나중에 쿼리 튜닝 필요
     data = pd.read_sql('SELECT * FROM research', con = db.connection())
     cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
@@ -345,7 +352,8 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
 
 ## Stock function
 @app.get('/Stock/news/{code}')
-def get_stock_research(db: Session = Depends(get_db), code: str = ""):
+def get_stock_news(db: Session = Depends(get_db), code: str = ""):
+    print('get_stock_news() 실행', datetime.now())
     url = f'https://openapi.naver.com/v1/search/news.json'
     q = f"""
     SELECT *
@@ -382,6 +390,7 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
 
 @app.get('/Stock/telegram/{code}')
 def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
+    print('get_stock_telegram_data() 실행', datetime.now())
     q1 = f"""
     SELECT *
     FROM (
@@ -402,6 +411,7 @@ def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
 
 @app.get("/Stock/{code}/{order}")
 def get_stock_of_etf_data(db: Session = Depends(get_db), code: str = "", order: str = ""):
+    print('get_stock_of_etf_data() 실행', datetime.now())
     q1 = f"""
     SELECT etf_name, recent_ratio, past_ratio, diff_ratio
     FROM etf_base_table
