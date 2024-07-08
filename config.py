@@ -57,21 +57,11 @@ engine = create_engine('oracle+oracledb://',
                            pool_pre_ping=True,
                            creator=lambda: connection)
 SessionLocal = sessionmaker(bind=engine)
-# Base = declarative_base()
 
 def get_db():
-
     db = SessionLocal()
-#    try:
-#        db.execute(text('SELECT * FROM code_list'))
-#        db.close()
-#        db = SessionLocal()
-#    except exc.DBAPIError as e:
-#        if e.connection_invalidated:
-#            print('connection was invalidated')
-#    db = SessionLocal()
-
     try:
+        pd.read_sql('SELECT 1', db.connection())
         yield db
     except :
         db.close()
