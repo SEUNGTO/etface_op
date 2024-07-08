@@ -87,7 +87,6 @@ def get_all_drop_data(db: Session = Depends(get_db)):
 
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
-      
 def get_etf_data(db: Session = Depends(get_db), code: str = ""):
     print('get_etf_data() 실행', datetime.now())
     q1 = f"""
