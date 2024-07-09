@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+key
 dist-ssr
 *.local
 
@@ -21,12 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-meta.xlsx
-table_meta.pptx
-newdata.db
 Wallet_appdb.zip
-key/*
-etface_crawler.py
 *.ptc
 __pycache__
 *.env
