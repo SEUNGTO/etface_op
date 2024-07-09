@@ -10,7 +10,7 @@ import FinanceDataReader as fdr
 from bs4 import BeautifulSoup
 import pytz
 from datetime import datetime, timedelta
-# 240709
+
 # 1. 기본 설정값
 telegram_dict = telegramConfig
 
