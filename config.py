@@ -7,7 +7,6 @@ from sqlalchemy import create_engine, text, exc
 from sqlalchemy.orm import sessionmaker, declarative_base
 from starlette.config import Config
 
-
 config = Config('.env')
 
 wallet_location = os.path.join(os.getcwd(), 'key')
@@ -67,11 +66,11 @@ def get_db():
     except :
         print('오류 발생 후 db생성 로직 작동')
         db.close()
+        del db
         db = SessionLocal()
         yield db
     finally:
         db.close()
-
 
 telegramConfig = {
     '주식 급등일보🚀급등테마·대장주 탐색기': 'https://t.me/s/FastStockNews'
