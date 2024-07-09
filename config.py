@@ -67,7 +67,6 @@ def get_db():
     except :
         print('오류 발생 후 db생성 로직 작동')
         db.close()
-        del db
         db = SessionLocal()
         yield db
     finally:
