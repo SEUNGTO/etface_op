@@ -1,6 +1,7 @@
 import os
 import zipfile
 import oracledb
+import pandas as pd
 from google.cloud import storage
 from google.oauth2.service_account import Credentials
 from sqlalchemy import create_engine, text, exc
@@ -36,7 +37,6 @@ if not os.path.exists(WALLET_FILE) :
 
     zip_file_path = os.path.join(os.getcwd(), WALLET_FILE)
 
-
     if not os.path.exists(wallet_location):
         os.makedirs(wallet_location, exist_ok=True)
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
@@ -57,20 +57,19 @@ engine = create_engine('oracle+oracledb://',
                            creator=lambda: connection)
 SessionLocal = sessionmaker(bind=engine)
 
+
 def get_db():
-    print('get_db() 시작')
     db = SessionLocal()
     try:
-        print('이상없이 yield db 실행')
         yield db
     except :
-        print('오류 발생 후 db생성 로직 작동')
+        db.rollback()
         db.close()
-        del db
         db = SessionLocal()
         yield db
     finally:
         db.close()
+        del db
 
 telegramConfig = {
     '주식 급등일보🚀급등테마·대장주 탐색기': 'https://t.me/s/FastStockNews'

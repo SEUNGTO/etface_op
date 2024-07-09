@@ -41,7 +41,6 @@ def get_code_list(db: Session = Depends(get_db)):
     data = pd.read_sql('SELECT * FROM code_list', con = db.connection())
     return data.reset_index(drop=True).to_json(orient='records')
 
-
 @app.get("/entire/new")
 def get_all_new_data(db: Session = Depends(get_db)):
     print('get_all_new_data() 실행', datetime.now())
