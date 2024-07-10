@@ -3,7 +3,6 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from sqlalchemy.engine.base import Connection
 from config import *
 import requests
 import pandas as pd
@@ -228,7 +227,7 @@ def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = "
             FROM stock_target
             WHERE code = '{code}'
             """
-            target = pd.read_sql(q, con=db)
+            target = pd.read_sql(q, con=db.connection())
 
         if target.shape[0] != 0:
             target = target.loc[target['code'] == code, ['Date', 'target']]

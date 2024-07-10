@@ -62,6 +62,9 @@ engine = create_engine('oracle+oracledb://',
                            pool_pre_ping=True,
                            creator=get_connection)
 SessionLocal = sessionmaker(bind=engine)
+db = SessionLocal()
+import pandas as pd
+pd.read_sql('SELECT * FROM code_list',db.connection())
 
 def get_db():
     db = SessionLocal()
