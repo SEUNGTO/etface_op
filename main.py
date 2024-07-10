@@ -407,8 +407,9 @@ def get_stock_news(db: Session = Depends(get_db), code: str = ""):
             params = {'query': keyword,
                       'display': '50'}
             headers = {
-                'X-Naver-Client-Id': "WDKaxlcrfs7Jkdt7pSdb",
-                'X-Naver-Client-Secret': "IA8DWA9loM"}
+                'X-Naver-Client-Id': config('X-Naver-Client-Id'),
+                'X-Naver-Client-Secret': config('X-Naver-Client-Secret')
+            }
 
             response = requests.get(url, params=params, headers=headers)
             newsData = pd.DataFrame(response.json()['items'])[['title', 'pubDate', 'link']]
