@@ -57,19 +57,12 @@ engine = create_engine('oracle+oracledb://',
                            creator=lambda: connection)
 SessionLocal = sessionmaker(bind=engine)
 
-
 def get_db():
-    db = SessionLocal()
+    db = SessionLocal().connection()
     try:
-        yield db
-    except :
-        db.rollback()
-        db.close()
-        db = SessionLocal()
         yield db
     finally:
         db.close()
-        del db
 
 telegramConfig = {
     '주식 급등일보🚀급등테마·대장주 탐색기': 'https://t.me/s/FastStockNews'
