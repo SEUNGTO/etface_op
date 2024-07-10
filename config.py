@@ -1,12 +1,15 @@
 import os
 import zipfile
 import oracledb
+import logging
 import pandas as pd
 from google.cloud import storage
 from google.oauth2.service_account import Credentials
 from sqlalchemy import create_engine, text, exc
 from sqlalchemy.orm import sessionmaker, declarative_base
 from starlette.config import Config
+logging.basicConfig(level = logging.INFO)
+logger = logging.getLogger(__name__)
 
 config = Config('.env')
 
@@ -61,6 +64,8 @@ def get_db():
     db = SessionLocal().connection()
     try:
         yield db
+    except oracledb.DatabaseError as e :
+        logger.error(f'Database Connection failed : {e}')
     finally:
         db.close()
 
