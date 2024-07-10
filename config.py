@@ -2,11 +2,10 @@ import os
 import zipfile
 import oracledb
 import logging
-import pandas as pd
 from google.cloud import storage
 from google.oauth2.service_account import Credentials
-from sqlalchemy import create_engine, text, exc
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from starlette.config import Config
 logging.basicConfig(level = logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,20 +53,26 @@ pool = oracledb.create_pool(
     wallet_password=config('DB_WALLET_PASSWORD'),
     min=1, max = 5, increment=1)
 
-connection = pool.acquire()
+def get_connection():
+    connection = pool.acquire()
+    logger.info('Database connection acquired')
+    return connection
+
 engine = create_engine('oracle+oracledb://',
                            pool_pre_ping=True,
-                           creator=lambda: connection)
+                           creator=get_connection)
 SessionLocal = sessionmaker(bind=engine)
 
 def get_db():
-    db = SessionLocal().connection()
+    db = SessionLocal()
     try:
         yield db
     except oracledb.DatabaseError as e :
         logger.error(f'Database Connection failed : {e}')
+        raise
     finally:
         db.close()
+        logger.info('Database connection closed')
 
 telegramConfig = {
     '주식 급등일보🚀급등테마·대장주 탐색기': 'https://t.me/s/FastStockNews'

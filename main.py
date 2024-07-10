@@ -1,9 +1,8 @@
-import oracledb
 from fastapi import FastAPI, Depends
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
-# from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 from sqlalchemy.engine.base import Connection
 from config import *
 import requests
@@ -38,10 +37,10 @@ def index():
     return FileResponse("frontend/dist/index.html")
 
 @app.get("/codelist")
-def get_code_list(db: Connection = Depends(get_db)):
+def get_code_list(db: Session = Depends(get_db)):
 
     try :
-        data = pd.read_sql('SELECT * FROM code_list', con = db)
+        data = pd.read_sql('SELECT * FROM code_list', con = db.connection())
         db.close()
         return data.reset_index(drop=True).to_json(orient='records')
     except oracledb.DatabaseError as e:
@@ -52,7 +51,7 @@ def get_code_list(db: Connection = Depends(get_db)):
 
 
 @app.get("/entire/new")
-def get_all_new_data(db: Connection = Depends(get_db)):
+def get_all_new_data(db: Session = Depends(get_db)):
     try :
         q = f"""
         SELECT etf_name, stock_code, stock_name, recent_quantity, recent_amount, recent_ratio
@@ -61,7 +60,7 @@ def get_all_new_data(db: Connection = Depends(get_db)):
         and recent_ratio <> 0
         and past_ratio = 0
         """
-        data = pd.read_sql(q, con = db)
+        data = pd.read_sql(q, con = db.connection())
         data['recent_quantity'] = data['recent_quantity'].apply(lambda x: f'{x:,.0f}')
         data['recent_amount'] = data['recent_amount'].apply(lambda x: f'{x :,.0f}')
         data['recent_ratio'] = data['recent_ratio'].apply(lambda x: f'{x :.2f}')
@@ -74,7 +73,7 @@ def get_all_new_data(db: Connection = Depends(get_db)):
 
 
 @app.get("/entire/drop")
-def get_all_drop_data(db: Connection = Depends(get_db)):
+def get_all_drop_data(db: Session = Depends(get_db)):
 
     print('get_all_drop_data() 실행', datetime.now())
     try :
@@ -86,7 +85,7 @@ def get_all_drop_data(db: Connection = Depends(get_db)):
         and past_ratio <> 0
         """
 
-        data = pd.read_sql(q, con = db)
+        data = pd.read_sql(q, con = db.connection())
         data['past_quantity'] = data['past_quantity'].apply(lambda x: f'{x:,.0f}')
         data['past_amount'] = data['past_amount'].apply(lambda x: f'{x :,.0f}')
         data['past_ratio'] = data['past_ratio'].apply(lambda x: f'{x :.2f}')
@@ -101,7 +100,7 @@ def get_all_drop_data(db: Connection = Depends(get_db)):
 
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
-def get_etf_data(db: Connection = Depends(get_db), code: str = ""):
+def get_etf_data(db: Session = Depends(get_db), code: str = ""):
     print('get_etf_data() 실행', datetime.now())
     try :
         q1 = f"""
@@ -111,7 +110,7 @@ def get_etf_data(db: Connection = Depends(get_db), code: str = ""):
         and recent_ratio <> 0
         """
 
-        data = pd.read_sql(q1, con = db)
+        data = pd.read_sql(q1, con = db.connection())
         data = data.sort_values('recent_ratio', ascending=False)
         data = data.head(10).reset_index(drop=True)
         data.loc['기타', :] = ["기타", 100 - data['recent_ratio'].sum()]
@@ -130,7 +129,7 @@ def get_etf_data(db: Connection = Depends(get_db), code: str = ""):
 
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
-def get_detail_data(db: Connection = Depends(get_db), code:str = ""):
+def get_detail_data(db: Session = Depends(get_db), code:str = ""):
     try :
         print('get_detail_data() 실행', datetime.now())
         q1 = f"""
@@ -142,7 +141,7 @@ def get_detail_data(db: Connection = Depends(get_db), code:str = ""):
         WHERE etf_code = '{code}'
             and recent_ratio <> 0
         """
-        data = pd.read_sql(q1, con = db)
+        data = pd.read_sql(q1, con = db.connection())
 
         q2 = """
         SELECT  stock_code
@@ -154,7 +153,7 @@ def get_detail_data(db: Connection = Depends(get_db), code:str = ""):
                 ,report_link
         FROM etf_deposit_detail
         """
-        research = pd.read_sql(q2, con = db)
+        research = pd.read_sql(q2, con = db.connection())
 
         data = data.merge(research, how='left', on='stock_code')
         data = data.sort_values('recent_ratio', ascending=False)
@@ -177,7 +176,7 @@ def get_detail_data(db: Connection = Depends(get_db), code:str = ""):
 
 # ETF SECTION 2 : telegram
 @app.get('/ETF/telegram/{code}')
-def get_etf_telegram_data(db: Connection = Depends(get_db), code: str = ""):
+def get_etf_telegram_data(db: Session = Depends(get_db), code: str = ""):
     print('get_etf_telegram_data() 실행', datetime.now())
     try :
         q1 = f"""
@@ -192,7 +191,7 @@ def get_etf_telegram_data(db: Connection = Depends(get_db), code: str = ""):
             )
         WHERE ROWNUM <= 5
         """
-        stocks = pd.read_sql(q1, con = db)['stock_name'].tolist()
+        stocks = pd.read_sql(q1, con = db.connection())['stock_name'].tolist()
         data = clean_telegram_data(stocks)
         return {'list': stocks,
                 'data': data.reset_index(drop=True).to_json(orient='records')}
@@ -201,7 +200,7 @@ def get_etf_telegram_data(db: Connection = Depends(get_db), code: str = ""):
 
 # ETF SECTION 3 : price
 @app.get('/{_type}/{code}/price')
-def get_code_price(db: Connection = Depends(get_db), code: str = "", _type: str = ""):
+def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = ""):
     print('get_code_price() 실행', datetime.now())
     try :
         tz = pytz.timezone('Asia/Seoul')
@@ -221,7 +220,7 @@ def get_code_price(db: Connection = Depends(get_db), code: str = "", _type: str 
             FROM etf_target
             WHERE code = '{code}'
             """
-            target = pd.read_sql(q, con = db)
+            target = pd.read_sql(q, con = db.connection())
             target['target'] = standardize_price(target['target'])
         elif _type == "Stock":
             q = f"""
@@ -244,7 +243,7 @@ def get_code_price(db: Connection = Depends(get_db), code: str = "", _type: str 
         logger.error(f'Database operation failed: {e}')
 
 @app.get('/{_type}/{code}/price/describe')
-def get_code_price_describe(db: Connection = Depends(get_db), code: str = "", _type: str = ""):
+def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type: str = ""):
     print('get_code_price_describe() 실행', datetime.now())
     try :
         tz = pytz.timezone('Asia/Seoul')
@@ -266,7 +265,7 @@ def get_code_price_describe(db: Connection = Depends(get_db), code: str = "", _t
             FROM stock_target
             WHERE code = '{code}' 
             """
-            avg_target = pd.read_sql(q, con = db).values.max()
+            avg_target = pd.read_sql(q, con = db.connection()).values.max()
 
             if avg_target is not None :
                 target_ratio = current / avg_target * 100
@@ -299,7 +298,7 @@ def get_code_price_describe(db: Connection = Depends(get_db), code: str = "", _t
 
 
 @app.get("/ETF/{code}/{order}")
-def get_etf_data_by_order(db: Connection = Depends(get_db), code: str = "", order: str = ""):
+def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: str = ""):
     print('get_etf_data_by_order() 실행', datetime.now())
     try :
         q1 = f"""
@@ -307,7 +306,7 @@ def get_etf_data_by_order(db: Connection = Depends(get_db), code: str = "", orde
         FROM etf_base_table
         WHERE etf_code = '{code}'
         """
-        data = pd.read_sql(q1, con = db)
+        data = pd.read_sql(q1, con = db.connection())
 
         if order == 'increase':
             ind = (data['recent_ratio'] != 0) & (data['diff_ratio'] > 0)
@@ -339,11 +338,11 @@ def get_etf_data_by_order(db: Connection = Depends(get_db), code: str = "", orde
 
 ## Stock function
 @app.get('/Stock/research/{code}')
-def get_stock_research(db: Connection = Depends(get_db), code: str = ""):
+def get_stock_research(db: Session = Depends(get_db), code: str = ""):
     print('get_stock_research() 실행', datetime.now())
     # 나중에 쿼리 튜닝 필요
     try :
-        data = pd.read_sql('SELECT * FROM research', con = db)
+        data = pd.read_sql('SELECT * FROM research', con = db.connection())
         cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
         data = data.loc[data['종목코드'] == code, cols]
         check_null = len(data) > data['목표가'].isna().sum()
@@ -390,7 +389,7 @@ def get_stock_research(db: Connection = Depends(get_db), code: str = ""):
 
 ## Stock function
 @app.get('/Stock/news/{code}')
-def get_stock_news(db: Connection = Depends(get_db), code: str = ""):
+def get_stock_news(db: Session = Depends(get_db), code: str = ""):
     print('get_stock_news() 실행', datetime.now())
     try :
         url = f'https://openapi.naver.com/v1/search/news.json'
@@ -401,7 +400,7 @@ def get_stock_news(db: Connection = Depends(get_db), code: str = ""):
                 WHERE stock_code = '{code}')
         WHERE ROWNUM <= 1
         """
-        keyword = pd.read_sql(q, con = db)
+        keyword = pd.read_sql(q, con = db.connection())
 
         if len(keyword) > 0 :
             keyword = keyword['stock_name'].to_list()[0]
@@ -430,7 +429,7 @@ def get_stock_news(db: Connection = Depends(get_db), code: str = ""):
         logger.error(f'Database operation failed: {e}')
 
 @app.get('/Stock/telegram/{code}')
-def get_stock_telegram_data(db: Connection = Depends(get_db), code: str = ""):
+def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
     print('get_stock_telegram_data() 실행', datetime.now())
     try :
         q1 = f"""
@@ -445,7 +444,7 @@ def get_stock_telegram_data(db: Connection = Depends(get_db), code: str = ""):
             )
         WHERE ROWNUM <= 1
         """
-        stocks = pd.read_sql(q1, con = db)['stock_name'].tolist()
+        stocks = pd.read_sql(q1, con = db.connection())['stock_name'].tolist()
         data = clean_telegram_data(stocks)
 
         return data.reset_index(drop=True).to_json(orient='records')
@@ -455,7 +454,7 @@ def get_stock_telegram_data(db: Connection = Depends(get_db), code: str = ""):
 
 
 @app.get("/Stock/{code}/{order}")
-def get_stock_of_etf_data(db: Connection = Depends(get_db), code: str = "", order: str = ""):
+def get_stock_of_etf_data(db: Session = Depends(get_db), code: str = "", order: str = ""):
     print('get_stock_of_etf_data() 실행', datetime.now())
     try :
         q1 = f"""
@@ -463,7 +462,7 @@ def get_stock_of_etf_data(db: Connection = Depends(get_db), code: str = "", orde
         FROM etf_base_table
         WHERE stock_code = '{code}'
         """
-        data = pd.read_sql(q1, con = db)
+        data = pd.read_sql(q1, con = db.connection())
 
         if order == 'largeRatio':
             ind = (data['recent_ratio'] != 0)
