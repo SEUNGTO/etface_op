@@ -66,6 +66,7 @@ SessionLocal = sessionmaker(bind=engine)
 
 def get_db():
     db = SessionLocal()
+    logger.info('Database connected')
     try:
         yield db
     except oracledb.DatabaseError as e :
