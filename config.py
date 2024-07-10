@@ -7,9 +7,9 @@ from google.oauth2.service_account import Credentials
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.config import Config
+
 logging.basicConfig(level = logging.INFO)
 logger = logging.getLogger(__name__)
-
 config = Config('.env')
 
 wallet_location = os.path.join(os.getcwd(), 'key')
@@ -52,6 +52,7 @@ pool = oracledb.create_pool(
     wallet_location=wallet_location,
     wallet_password=config('DB_WALLET_PASSWORD'),
     min=1, max = 5, increment=1)
+
 
 def get_connection():
     connection = pool.acquire()

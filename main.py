@@ -68,13 +68,11 @@ def get_all_new_data(db: Session = Depends(get_db)):
             'data': data.reset_index(drop=True).to_json(orient='records')
         }
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_all_new_data]Database operation failed: {e}')
 
 
 @app.get("/entire/drop")
 def get_all_drop_data(db: Session = Depends(get_db)):
-
-    print('get_all_drop_data() 실행', datetime.now())
     try :
         q = f"""
         SELECT etf_name, stock_code, stock_name, past_quantity, past_amount, past_ratio
@@ -94,13 +92,12 @@ def get_all_drop_data(db: Session = Depends(get_db)):
             'data': data.reset_index(drop=True).to_json(orient='records')
         }
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_all_drop_data]Database operation failed: {e}')
 
 
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
 def get_etf_data(db: Session = Depends(get_db), code: str = ""):
-    print('get_etf_data() 실행', datetime.now())
     try :
         q1 = f"""
         SELECT stock_name, recent_ratio
@@ -123,14 +120,13 @@ def get_etf_data(db: Session = Depends(get_db), code: str = ""):
         return result
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_etf_data] Database operation failed: {e}')
 
 
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
 def get_detail_data(db: Session = Depends(get_db), code:str = ""):
     try :
-        print('get_detail_data() 실행', datetime.now())
         q1 = f"""
         SELECT 
             stock_code
@@ -170,13 +166,12 @@ def get_detail_data(db: Session = Depends(get_db), code:str = ""):
             'data': data.reset_index(drop=True).to_json(orient='records')
         }
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_detail_data]Database operation failed: {e}')
 
 
 # ETF SECTION 2 : telegram
 @app.get('/ETF/telegram/{code}')
 def get_etf_telegram_data(db: Session = Depends(get_db), code: str = ""):
-    print('get_etf_telegram_data() 실행', datetime.now())
     try :
         q1 = f"""
         SELECT *
@@ -195,12 +190,11 @@ def get_etf_telegram_data(db: Session = Depends(get_db), code: str = ""):
         return {'list': stocks,
                 'data': data.reset_index(drop=True).to_json(orient='records')}
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_etf_telegram_data] Database operation failed: {e}')
 
 # ETF SECTION 3 : price
 @app.get('/{_type}/{code}/price')
 def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = ""):
-    print('get_code_price() 실행', datetime.now())
     try :
         tz = pytz.timezone('Asia/Seoul')
         now = datetime.now(tz)
@@ -239,11 +233,10 @@ def get_code_price(db: Session = Depends(get_db), code: str = "", _type: str = "
         return price.to_dict()
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_code_price]Database operation failed: {e}')
 
 @app.get('/{_type}/{code}/price/describe')
 def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type: str = ""):
-    print('get_code_price_describe() 실행', datetime.now())
     try :
         tz = pytz.timezone('Asia/Seoul')
         now = datetime.now(tz)
@@ -293,7 +286,7 @@ def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type
             'lowest_ratio' : f"{lowest_ratio:.2f}",
         }
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_code_price_describe]Database operation failed: {e}')
 
 
 @app.get("/ETF/{code}/{order}")
@@ -333,7 +326,7 @@ def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: 
         return data.reset_index(drop=True).to_json(orient='records')
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_etf_data_by_order] Database operation failed: {e}')
 
 ## Stock function
 @app.get('/Stock/research/{code}')
@@ -384,7 +377,7 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
                 'data': data.reset_index(drop=True).to_json(orient='records')}
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_stock_research]Database operation failed: {e}')
 
 ## Stock function
 @app.get('/Stock/news/{code}')
@@ -426,7 +419,7 @@ def get_stock_news(db: Session = Depends(get_db), code: str = ""):
                     'data': newsData.reset_index(drop=True).to_json(orient='records')}
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_stock_news]Database operation failed: {e}')
 
 @app.get('/Stock/telegram/{code}')
 def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
@@ -450,7 +443,7 @@ def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
         return data.reset_index(drop=True).to_json(orient='records')
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_stock_telegram_data]Database operation failed: {e}')
 
 
 @app.get("/Stock/{code}/{order}")
@@ -495,7 +488,7 @@ def get_stock_of_etf_data(db: Session = Depends(get_db), code: str = "", order: 
         return data.reset_index(drop=True).to_json(orient='records')
 
     except oracledb.DatabaseError as e:
-        logger.error(f'Database operation failed: {e}')
+        logger.error(f'[get_stock_of_etf_data]Database operation failed: {e}')
 
 def telegram_crawller(url, keyword):
     telegram_msgs = {
