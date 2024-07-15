@@ -19,6 +19,7 @@ app = FastAPI()
 
 origins = [
     "http://43.201.252.164:8000",
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -291,7 +292,7 @@ def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type
 
 @app.get("/ETF/{code}/{order}")
 def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: str = ""):
-    print('get_etf_data_by_order() 실행', datetime.now())
+
     try :
         q1 = f"""
         SELECT stock_name, recent_ratio, past_ratio, diff_ratio
@@ -331,7 +332,7 @@ def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: 
 ## Stock function
 @app.get('/Stock/research/{code}')
 def get_stock_research(db: Session = Depends(get_db), code: str = ""):
-    print('get_stock_research() 실행', datetime.now())
+
     # 나중에 쿼리 튜닝 필요
     try :
         data = pd.read_sql('SELECT * FROM research', con = db.connection())
@@ -382,7 +383,7 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
 ## Stock function
 @app.get('/Stock/news/{code}')
 def get_stock_news(db: Session = Depends(get_db), code: str = ""):
-    print('get_stock_news() 실행', datetime.now())
+
     try :
         url = f'https://openapi.naver.com/v1/search/news.json'
         q = f"""
@@ -423,7 +424,7 @@ def get_stock_news(db: Session = Depends(get_db), code: str = ""):
 
 @app.get('/Stock/telegram/{code}')
 def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
-    print('get_stock_telegram_data() 실행', datetime.now())
+
     try :
         q1 = f"""
         SELECT *
@@ -448,7 +449,7 @@ def get_stock_telegram_data(db: Session = Depends(get_db), code: str = ""):
 
 @app.get("/Stock/{code}/{order}")
 def get_stock_of_etf_data(db: Session = Depends(get_db), code: str = "", order: str = ""):
-    print('get_stock_of_etf_data() 실행', datetime.now())
+
     try :
         q1 = f"""
         SELECT etf_name, recent_ratio, past_ratio, diff_ratio
