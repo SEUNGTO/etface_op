@@ -95,6 +95,30 @@ def get_all_drop_data(db: Session = Depends(get_db)):
     except oracledb.DatabaseError as e:
         logger.error(f'[get_all_drop_data]Database operation failed: {e}')
 
+@app.get("/calendar")
+def get_all_new_data():
+    tz = pytz.timezone('Asia/Seoul')
+    now = datetime.now(tz)
+
+    start_date = now.strftime('%Y-%m-%d')
+    end_date = (now + timedelta(days=10)).strftime('%Y-%m-%d')
+    address = 'https://asp.zeroin.co.kr/eco/includes/wei/module/json_getData.php'
+    str_nation = 'United+States|미국|China|중국|Japan|일본|South+Korea|한국|'
+    str_natcd = 'us|cn|jp|kr|'
+    url = f'{address}?start_date={start_date}&end_date={end_date}&str_nation={str_nation}&str_natcd={str_natcd}&str_importance=3|2|1|'
+    response = requests.get(url)
+    data = pd.DataFrame(response.json())
+    cols = ['nat_hname', 'date', 'time', 'kevent', 'previous', 'forecast', 'importance']
+    data = data[cols]
+    data.columns = ['국가', '날짜', '시간', '지표명', '이전 실적', '이번 예상', '중요도']
+    data = data.sort_values(['날짜', '시간'])
+
+    data['국가'] = data['국가'].replace('미국', '미국')
+    data['국가'].replace('미국', '미국')
+
+    return data.reset_index(drop=True).to_json(orient='records')
+
+
 
 # ETF SECTION 1-1 : top10 chart
 @app.get("/ETF/{code}/top10")
@@ -567,3 +591,26 @@ def standardize_price(data):
 
     _stdData = 2 * (centered - _min) / (_max - _min) - 1
     return _stdData * 100
+
+
+
+
+@app.get("/calendar")
+def get_all_new_data():
+    tz = pytz.timezone('Asia/Seoul')
+    now = datetime.now(tz)
+
+    start_date = now.strftime('%Y-%m-%d')
+    end_date = (now + timedelta(days=10)).strftime('%Y-%m-%d')
+    address = 'https://asp.zeroin.co.kr/eco/includes/wei/module/json_getData.php'
+    str_nation = 'United+States|미국|China|중국|Japan|일본|South+Korea|한국|'
+    str_natcd = 'us|cn|jp|kr|'
+
+    url = f'{address}?start_date={start_date}&end_date={end_date}&str_nation={str_nation}&str_natcd={str_natcd}&str_importance=3|2|1|'
+    response = requests.get(url)
+    data = pd.DataFrame(response.json())
+    data = data[['nat_hname', 'date', 'time', 'kevent', 'previous', 'forecast', 'importance']]
+    data.columns = ['국가', '날짜', '시간', '지표명', '이전 실적', '이번 예상', '중요도']
+    data = data.sort_values('날짜', ascending = True)
+
+    return data.reset_index(drop=True).to_json(orient='records')
