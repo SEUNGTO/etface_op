@@ -98,24 +98,38 @@ def get_all_drop_data(db: Session = Depends(get_db)):
 @app.get("/calendar")
 def get_calendar_data():
 
+    days_ago = 3
+    days_later = 7
+
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
 
-    start_date = now.strftime('%Y-%m-%d')
-    end_date = (now + timedelta(days=10)).strftime('%Y-%m-%d')
+    start_date = (now - timedelta(days=days_ago)).strftime('%Y-%m-%d')
+    end_date = (now + timedelta(days=days_later)).strftime('%Y-%m-%d')
     address = 'https://asp.zeroin.co.kr/eco/includes/wei/module/json_getData.php'
     str_nation = 'United+States|미국|China|중국|Japan|일본|South+Korea|한국|'
     str_natcd = 'us|cn|jp|kr|'
     url = f'{address}?start_date={start_date}&end_date={end_date}&str_nation={str_nation}&str_natcd={str_natcd}&str_importance=3|2|1|'
+
     response = requests.get(url)
+    response.encoding = response.apparent_encoding
     data = pd.DataFrame(response.json())
-    cols = ['nat_hname', 'date', 'time', 'kevent', 'previous', 'forecast', 'importance']
+    cols = ['nat_hname', 'date', 'time', 'kevent', 'previous', 'forecast', 'actual', 'importance']
     data = data[cols]
-    data.columns = ['국가', '날짜', '시간', '지표명', '이전 실적', '이번 예상', '중요도']
+    data.columns = ['국가', '날짜', '시간', '지표명', '이전 실적', '이번 예상','실제 실적','중요도']
+
+    # 전처리 : 엔 표기 변경
+    data[['이전 실적', '이번 예상', '실제 실적']] = data[['이전 실적', '이번 예상', '실제 실적']].apply(lambda x : x.str.replace("&yen;", "￥"))
+
+    # 데이터 정렬
     data = data.sort_values(['날짜', '시간'])
 
+    # 날짜 데이터 생성
     value = data['날짜'].unique().tolist()
-    name = [f'{int(d[:2])}월 {int(d[-2:])}일' for d in value]
+    days = [f'{int(d[:2])}월 {int(d[-2:])}일' for d in value]
+    time_diff = [f'({v}일 전)' for v in range(days_ago, 0, -1)] + ['(오늘)'] + [f'({v}일 후)' for v in range(1, days_later+1)]
+    name = [v1 + v2 for v1, v2 in zip(days, time_diff)]
+
     date = pd.DataFrame({'value': value, 'name': name})
 
     return {
