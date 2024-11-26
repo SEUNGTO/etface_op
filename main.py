@@ -114,9 +114,15 @@ def get_calendar_data():
     response = requests.get(url)
     response.encoding = response.apparent_encoding
     data = pd.DataFrame(response.json())
-    cols = ['nat_hname', 'date', 'time', 'kevent', 'previous', 'forecast', 'actual', 'importance']
+    cols = ['nat_hname', 'date', 'time', 'kevent', 'previous', 'forecast', 'actual', 'importance_class']
     data = data[cols]
     data.columns = ['국가', '날짜', '시간', '지표명', '이전 실적', '이번 예상','실제 실적','중요도']
+
+    # 2024-11-26 중요도 데이터가 바뀌어서 수정함
+    data['중요도'] = data['중요도'].apply(lambda x : x.split("_")[-1])
+    data['중요도'] = data['중요도'].str.replace("high", "상")
+    data['중요도'] = data['중요도'].str.replace("md", "중")
+    data['중요도'] = data['중요도'].str.replace("low", "하")
 
     # 전처리 : 엔 표기 변경
     data[['이전 실적', '이번 예상', '실제 실적']] = data[['이전 실적', '이번 예상', '실제 실적']].apply(lambda x : x.str.replace("&yen;", "￥"))
@@ -136,7 +142,6 @@ def get_calendar_data():
         'date': date.reset_index(drop=True).to_json(orient='records'),
         'data': data.reset_index(drop=True).to_json(orient='records')
     }
-
 
 
 # ETF SECTION 1-1 : top10 chart
