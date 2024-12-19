@@ -380,11 +380,11 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
     # 나중에 쿼리 튜닝 필요
     try :
         data = pd.read_sql('SELECT * FROM research', con = db.connection())
+        data = data.drop_duplicates()
         cols = ['리포트 제목', '목표가', '의견', '게시일자', '증권사', '링크']
         data = data.loc[data['종목코드'] == code, cols]
-        check_null = len(data) > data['목표가'].isna().sum()
 
-        if len(data) > 0 and check_null :
+        if len(data) > 0 :
 
             maxIdx = data['목표가'].astype(float).idxmax()
             if maxIdx is np.nan :
@@ -420,6 +420,7 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
 
             data['목표가'] = data['목표가'].apply(lambda x: None if x == "" or x == None else f'{float(x) :,.0f}')
             data = data.sort_values('게시일자', ascending=False)
+            data.fillna("", inplace = True)
         else :
             message = {
                 'length': "0",
