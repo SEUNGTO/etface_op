@@ -10,6 +10,7 @@ import FinanceDataReader as fdr
 from bs4 import BeautifulSoup
 import pytz
 from datetime import datetime, timedelta
+import numpy as np
 
 # 1. 기본 설정값
 telegram_dict = telegramConfig
@@ -45,10 +46,6 @@ def get_code_list(db: Session = Depends(get_db)):
         return data.reset_index(drop=True).to_json(orient='records')
     except oracledb.DatabaseError as e:
         logger.error(f'Database operation failed: {e}')
-
-
-
-
 
 @app.get("/entire/new")
 def get_all_new_data(db: Session = Depends(get_db)):
@@ -380,7 +377,6 @@ def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: 
 ## Stock function
 @app.get('/Stock/research/{code}')
 def get_stock_research(db: Session = Depends(get_db), code: str = ""):
-
     # 나중에 쿼리 튜닝 필요
     try :
         data = pd.read_sql('SELECT * FROM research', con = db.connection())
@@ -389,18 +385,30 @@ def get_stock_research(db: Session = Depends(get_db), code: str = ""):
         check_null = len(data) > data['목표가'].isna().sum()
 
         if len(data) > 0 and check_null :
+
             maxIdx = data['목표가'].astype(float).idxmax()
-            maxResearcher = data.loc[maxIdx, '증권사']
-            maxPrice = data.loc[maxIdx, '목표가']
-            maxPrice = f'{float(maxPrice):,.0f}'
+            if maxIdx is np.nan :
+                maxResearcher = None
+                maxPrice = None
+            else :
+                maxResearcher = data.loc[maxIdx, '증권사']
+                maxPrice = data.loc[maxIdx, '목표가']
+                maxPrice = f'{float(maxPrice):,.0f}'
 
             minIdx = data['목표가'].astype(float).idxmin()
-            minResearcher = data.loc[minIdx, '증권사']
-            minPrice = data.loc[minIdx, '목표가']
-            minPrice = f'{float(minPrice):,.0f}'
+            if minIdx is np.nan :
+                minResearcher = None
+                minPrice = None
+            else :
+                minResearcher = data.loc[minIdx, '증권사']
+                minPrice = data.loc[minIdx, '목표가']
+                minPrice = f'{float(minPrice):,.0f}'
 
             avgPrice = data['목표가'].astype(float).mean()
-            avgPrice = f'{float(avgPrice):,.0f}'
+            if avgPrice is np.nan :
+                avgPrice = None
+            else :
+                avgPrice = f'{float(avgPrice):,.0f}'
             message = {
                 'length' : len(data),
                 'avgPrice' : avgPrice,
