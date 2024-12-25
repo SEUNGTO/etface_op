@@ -334,6 +334,53 @@ def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type
     except oracledb.DatabaseError as e:
         logger.error(f'[get_code_price_describe]Database operation failed: {e}')
 
+@app.get("/ETF/{code}/finance")
+def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
+
+    try :
+        query = f"SELECT acount_name, amount FROM etf_finance WHERE etf_code = '{code}'"
+        data = pd.read_sql(query, con = db.connection())
+        data['amount'] = [f"{v:,.0f}" for v in data['amount']]
+        data.columns = ['계정명', '금액']
+        data['구분'] = data['계정명'].copy()
+        data['구분'] = data['구분'].replace({
+            '당기순이익' : '포괄손익',
+            '매출액' : '포괄손익',
+            '매출채권' : '부채',
+            '부채총계' : '부채',
+            '비유동부채' : '부채',
+            '비유동자산' : '자산',
+            '영업이익' : '포괄손익',
+            '유동부채' : '부채',
+            '유동자산' : '자산',
+            '이익잉여금' : '자본',
+            '자본총계' : '자본',
+            '자산총계' : '자산',
+            '재고자산' : '자산',
+            '현금' : '자산'
+        })
+        data['순서'] = data['계정명'].copy()
+        data['순서'] = data['순서'].replace({
+            '매출액' : '01',
+            '영업이익' : '02',
+            '당기순이익' : '03',
+            '현금' : '04',
+            '재고자산' : '05',
+            '유동자산' : '06',
+            '비유동자산' : '07',
+            '자산총계' : '08',
+            '매출채권' : '09',
+            '유동부채' : '10',
+            '비유동부채' : '11',
+            '부채총계' : '12',
+            '이익잉여금' : '13',
+            '자본총계' : '14',
+        })
+
+        return data.sort_values('순서').to_json(orient='records')
+
+    except oracledb.DatabaseError as e:
+        logger.error(f'[get_etf_finance] Database operation failed: {e}')
 
 @app.get("/ETF/{code}/{order}")
 def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: str = ""):
@@ -373,6 +420,9 @@ def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: 
 
     except oracledb.DatabaseError as e:
         logger.error(f'[get_etf_data_by_order] Database operation failed: {e}')
+
+
+
 
 ## Stock function
 @app.get('/Stock/research/{code}')
