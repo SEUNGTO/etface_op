@@ -338,9 +338,26 @@ def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type
 def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
 
     try :
-        query = f"SELECT acount_name, amount FROM etf_finance WHERE etf_code = '{code}'"
+        query = f"""
+            SELECT t1.acount_name, t1.amount, t2."CU수량"
+            FROM (
+                SELECT *
+                FROM ETF_FINANCE
+                WHERE etf_code = '{code}'
+                ) t1
+            LEFT JOIN (
+                SELECT "CU수량", "단축코드"
+                FROM etf_info
+                WHERE "단축코드" = '{code}'
+            ) t2
+            on t1.etf_code = t2."단축코드"
+        """
         data = pd.read_sql(query, con = db.connection())
+        n_cu = data['CU수량'].to_list()[0]
+        ratio = get_ratio(data, code, n_cu)
+
         data['amount'] = [f"{v:,.0f}" for v in data['amount']]
+        data.drop('CU수량', axis = 1, inplace = True)
         data.columns = ['계정명', '금액']
         data['구분'] = data['계정명'].copy()
         data['구분'] = data['구분'].replace({
@@ -376,11 +393,35 @@ def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
             '이익잉여금' : '13',
             '자본총계' : '14',
         })
-
-        return data.sort_values('순서').to_json(orient='records')
-
+        
+        return {
+            'data' : data.sort_values('순서').to_json(orient='records'),
+            'ratio' : ratio.to_json(orient = 'records')
+            }
     except oracledb.DatabaseError as e:
         logger.error(f'[get_etf_finance] Database operation failed: {e}')
+
+def get_ratio(data, code, n_cu) :
+    data = data.set_index('acount_name')
+    price = fdr.DataReader(code)['Close'].tail(1).values[0]
+    ratio = [
+        ['순이익률', data.loc['당기순이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
+        ['영업이익률', data.loc['영업이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
+        ['ROE(자기자본이익률)', data.loc['당기순이익', 'amount'] / data.loc['자본총계', 'amount'] * 100],
+        ['ROA(총자산이익률)', data.loc['당기순이익', 'amount'] / data.loc['자산총계', 'amount'] * 100],
+        # ['매출채권회전율', data.loc['매출액', 'amount'] / data.loc['매출채권', 'amount'] * 100],
+        # ['재고자산회전율', data.loc['매출액', 'amount'] / data.loc['재고자산', 'amount'] * 100],
+        ['부채비율', data.loc['부채총계', 'amount'] / data.loc['자본총계', 'amount'] * 100],
+        ['유동비율', data.loc['유동자산', 'amount'] / data.loc['유동부채', 'amount'] * 100],
+        ['EPS', data.loc['당기순이익', 'amount'] / n_cu],
+        ['BPS', data.loc['자본총계', 'amount'] / n_cu],
+        ['PER', price/(data.loc['당기순이익', 'amount'] / n_cu)],
+        ['PBR', price/(data.loc['자본총계', 'amount'] / n_cu)],
+    ]
+    ratio = pd.DataFrame(ratio, columns = ['지표명', '값'])
+    ratio['값'] = round(ratio['값'], 2)
+    return ratio
+
 
 @app.get("/ETF/{code}/{order}")
 def get_etf_data_by_order(db: Session = Depends(get_db), code: str = "", order: str = ""):
