@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import pytz
 from datetime import datetime, timedelta
 import numpy as np
+import json
 
 # 1. 기본 설정값
 telegram_dict = telegramConfig
@@ -421,6 +422,54 @@ def get_ratio(data, code, n_cu) :
     ratio = pd.DataFrame(ratio, columns = ['지표명', '값'])
     ratio['값'] = round(ratio['값'], 2)
     return ratio
+
+@app.get("/ETF/{code}/profile")
+def get_etf_profile(db: Session = Depends(get_db), code: str = ""):
+    try : 
+        tz = pytz.timezone('Asia/Seoul')
+        now = datetime.now(tz)
+        today = datetime(now.year, now.month, now.day)
+
+        query = f"""
+        SELECT "상장일", "기초지수명", "지수산출기관",
+            "복제방법", "기초시장분류", "기초자산분류",
+            "운용사", "CU수량", "총보수", "과세유형"
+        FROM etf_info
+        WHERE "단축코드" = '{code}'
+        """
+        data = pd.read_sql(query, con = db.connection())
+
+        list_date = pd.to_datetime(data['상장일'].values[0])
+        days = (today - list_date).days
+        asset = data['기초자산분류'].values[0]
+        market = data['기초시장분류'].values[0]
+        pay = f"{data['총보수'].values[0]}%"
+        tax = data['과세유형'].values[0]
+        
+        track_index = data['기초지수명'].values[0]
+        tracker = data['지수산출기관'].values[0]
+        
+        operator = data['운용사'].values[0]
+        method = data['복제방법'].values[0].split("(")[-1].replace(")", "")
+        
+        profile = {
+            "운용사" : operator,
+            '시장' : market,
+            '기초자산' : asset,
+            "스타일" : method,
+            "산출기관" : tracker,
+            "기초지수" : track_index,
+            "상장일" : list_date.strftime("%Y년 %m월 %d일"),
+            "상장일수" : days,
+            '과세' : tax,
+            '총보수' : pay,
+            }
+
+        return json.dumps(profile)
+
+    except oracledb.DatabaseError as e:
+        logger.error(f'[get_etf_data_by_order] Database operation failed: {e}')
+
 
 
 @app.get("/ETF/{code}/{order}")
