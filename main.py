@@ -170,6 +170,50 @@ def get_etf_data(db: Session = Depends(get_db), code: str = ""):
         logger.error(f'[get_etf_data] Database operation failed: {e}')
 
 
+# ETF SECTION 1-1 : Similar Top5
+@app.get("/ETF/{code}/similar")
+def get_similar_etf_data(db: Session = Depends(get_db), code: str = ""):
+    try :
+        q1 = f"""
+            SELECT etf_name, etf_code, stock_name, recent_ratio
+            FROM etf_base_table
+            WHERE 1 = 1
+            and etf_code in (SELECT CAST("{code}" as VARCHAR(50)) FROM similar_etf)
+            and recent_ratio <> 0
+            """
+        data = pd.read_sql(q1, con = db.connection())
+        
+        # subset_code = data['etf_code'].drop_duplicates().to_list()
+        subset_name = data['etf_name'].drop_duplicates().to_list()
+        response = []
+
+        for sub_name in subset_name :
+
+            buffer = {}
+            tmp = data.loc[data['etf_name'] == sub_name, ['stock_name', 'recent_ratio']]
+            tmp = tmp.sort_values('recent_ratio', ascending=False)
+            tmp = tmp.head(10).reset_index(drop=True)
+            tmp.loc['기타', :] = ["기타", 100 - tmp['recent_ratio'].sum()]
+            tmp['recent_ratio'] = tmp['recent_ratio'].apply(lambda x: f'{x :.2f}')
+            tmp.columns = ['종목명', '비중']
+            for idx, item in tmp.iterrows() :
+                buffer[item['종목명']] = item['비중']
+            
+            response.append(buffer)
+
+        name = data[['etf_name']].drop_duplicates()
+        name = name.rename(columns = {'etf_name' : 'name'})
+        name['value'] = [0,1,2,3,4]
+
+        return {
+            'name' : name.to_json(orient='records'),
+            'data' : json.dumps(response),
+        }
+
+    except oracledb.DatabaseError as e:
+        logger.error(f'[get_etf_data] Database operation failed: {e}')
+
+
 # ETF SECTION 1-2 : detail deposit
 @app.get('/ETF/{code}/depositDetail')
 def get_detail_data(db: Session = Depends(get_db), code:str = ""):
