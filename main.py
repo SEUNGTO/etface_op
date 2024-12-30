@@ -6,13 +6,8 @@ from sqlalchemy.orm import Session
 from config import *
 import requests
 import pandas as pd
-import FinanceDataReader as fdr
-from bs4 import BeautifulSoup
 import pytz
 from datetime import datetime, timedelta
-import numpy as np
-import json
-
 from domain.ETF import etf_router
 from domain.Stock import stock_router
 
