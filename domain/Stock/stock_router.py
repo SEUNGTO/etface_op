@@ -151,7 +151,7 @@ def get_code_price(db: Session = Depends(get_db), code: str = ""):
         month_ago = now - timedelta(days=90)  # 사실은 3달 전
         month_ago = month_ago.strftime('%Y-%m-%d')
 
-        price = fdr.DataReader(code, start=month_ago, end=today).reset_index()
+        price = fdr.DataReader(f"YAHOO:{code}.KS", start=month_ago, end=today).reset_index()
         price = price[['Date', 'Close']]
         price['Date'] = price['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 
@@ -184,7 +184,7 @@ def get_code_price_describe(db: Session = Depends(get_db), code: str = "", _type
         month_ago = now - timedelta(days=90)  # 사실은 3달 전
         month_ago = month_ago.strftime('%Y-%m-%d')
 
-        price = fdr.DataReader(code, start=month_ago, end=today).reset_index()
+        price = fdr.DataReader(f"YAHOO:{code}.KS", start=month_ago, end=today).reset_index()
         price = price[['Date', 'Close']]
         price['Date'] = price['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 

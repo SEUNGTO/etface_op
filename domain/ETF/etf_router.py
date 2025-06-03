@@ -159,7 +159,7 @@ def get_code_price(db: Session = Depends(get_db), code: str = ""):
         month_ago = now - timedelta(days=90)  # 사실은 3달 전
         month_ago = month_ago.strftime('%Y-%m-%d')
 
-        price = fdr.DataReader(code, start=month_ago, end=today).reset_index()
+        price = fdr.DataReader(f"YAHOO:{code}.KS", start=month_ago, end=today).reset_index()
         price = price[['Date', 'Close']]
         price['Date'] = price['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 
@@ -194,7 +194,7 @@ def get_code_price_describe(db: Session = Depends(get_db), code: str = ""):
         month_ago = now - timedelta(days=90)  # 사실은 3달 전
         month_ago = month_ago.strftime('%Y-%m-%d')
 
-        price = fdr.DataReader(code, start=month_ago, end=today).reset_index()
+        price = fdr.DataReader(f"YAHOO:{code}.KS", start=month_ago, end=today).reset_index()
         price = price[['Date', 'Close']]
         price['Date'] = price['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
 
@@ -363,7 +363,7 @@ def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
 
 def get_ratio(data, code, n_cu) :
     data = data.set_index('acount_name')
-    price = fdr.DataReader(code)['Close'].tail(1).values[0]
+    price = fdr.DataReader(f"YAHOO:{code}.KS")['Close'].tail(1).values[0]
     ratio = [
         ['순이익률', data.loc['당기순이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
         ['영업이익률', data.loc['영업이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
