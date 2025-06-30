@@ -239,7 +239,7 @@ def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
                 WHERE etf_code = '{code}'
                     AND acount_name in 
                         (
-                            '매출액', '법인세차감전 순이익', '당기순이익',
+                            '매출액', '영업이익','법인세차감전 순이익', '당기순이익',
                             '유동자산', '현금', '매출채권', '재고자산', '비유동자산', '자산총계',
                             '유동부채', '매입채무', '비유동부채', '부채총계', '자본금', '이익잉여금', '자본총계'
                         )
@@ -262,7 +262,7 @@ def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
         data['구분'] = data['계정명'].copy()
         data['구분'] = data['구분'].replace({
             '매출액' : '포괄손익', 
-            # '영업이익' : '포괄손익', 
+            '영업이익' : '포괄손익', 
             '법인세차감전 순이익' : '포괄손익', 
             '당기순이익' : '포괄손익',
             '유동자산' : '자산', 
@@ -282,7 +282,7 @@ def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
         data['순서'] = data['계정명'].copy()
         data['순서'] = data['순서'].replace({
             '매출액' : '01', 
-            # '영업이익' : '02', 
+            '영업이익' : '02', 
             '법인세차감전 순이익' : '03', 
             '당기순이익' : '04',
             '유동자산' : '05', 
