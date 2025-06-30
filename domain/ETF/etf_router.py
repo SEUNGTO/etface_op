@@ -324,8 +324,16 @@ def get_ratio(data, code, n_cu) :
         ['매출채권회전율', data.loc['매출액', 'amount']/data.loc['매출채권', 'amount']],
         ['재고자산회전율', data.loc['매출액', 'amount']/data.loc['재고자산', 'amount']],
         ['매입채무회전율', data.loc['매출액', 'amount']/data.loc['매입채무', 'amount']],
+        
+        ['매출채권회전일수', 365/(data.loc['매출액', 'amount']/data.loc['매출채권', 'amount'])],
+        ['재고자산회전일수', 365/(data.loc['매출액', 'amount']/data.loc['재고자산', 'amount'])],
+        ['매입채무회전일수', 365/(data.loc['매출액', 'amount']/data.loc['매입채무', 'amount'])],
+        
+        ['현금순환주기', 365/(data.loc['매출액', 'amount']/data.loc['매입채무', 'amount'])],
+        
     ]
     ratio = pd.DataFrame(ratio, columns = ['지표명', '값'])
+    ratio.loc['현금순환주기', '값'] = ratio.loc['매출채권회전일수', '값'] + ratio.loc['재고자산회전일수', '값'] - ratio.loc['매입채무회전일수', '값']
     ratio['값'] = round(ratio['값'], 2)
     return ratio
 
