@@ -311,12 +311,12 @@ def get_ratio(data, code, n_cu) :
     data = data.set_index('acount_name')
     price = fdr.DataReader(f"NAVER:{code}")['Close'].tail(1).values[0]
     ratio = [
-        ['순이익률', data.loc['당기순이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
-        ['영업이익률', data.loc['영업이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
-        ['ROE(자기자본이익률)', data.loc['당기순이익', 'amount'] / data.loc['자본총계', 'amount'] * 100],
-        ['ROA(총자산이익률)', data.loc['당기순이익', 'amount'] / data.loc['자산총계', 'amount'] * 100],
-        ['부채비율', data.loc['부채총계', 'amount'] / data.loc['자본총계', 'amount'] * 100],
-        ['유동비율', data.loc['유동자산', 'amount'] / data.loc['유동부채', 'amount'] * 100],
+        ['순이익률(%)', data.loc['당기순이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
+        ['영업이익률(%)', data.loc['영업이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
+        ['ROE(자기자본이익률, %)', data.loc['당기순이익', 'amount'] / data.loc['자본총계', 'amount'] * 100],
+        ['ROA(총자산이익률, %)', data.loc['당기순이익', 'amount'] / data.loc['자산총계', 'amount'] * 100],
+        ['부채비율(%)', data.loc['부채총계', 'amount'] / data.loc['자본총계', 'amount'] * 100],
+        ['유동비율(%)', data.loc['유동자산', 'amount'] / data.loc['유동부채', 'amount'] * 100],
         ['EPS', data.loc['당기순이익', 'amount'] / n_cu],
         ['BPS', data.loc['자본총계', 'amount'] / n_cu],
         ['PER', price/(data.loc['당기순이익', 'amount'] / n_cu)],
@@ -331,8 +331,11 @@ def get_ratio(data, code, n_cu) :
         
     ]
     ratio = pd.DataFrame(ratio, columns = ['지표명', '값'])
-    # ratio.loc['현금순환주기', '값'] = ratio.loc['매출채권회전일수', '값'] + ratio.loc['재고자산회전일수', '값'] - ratio.loc['매입채무회전일수', '값']
+    ratio = ratio.set_index('지표명')
+    ratio.loc['현금순환주기(CCC)', '값'] = ratio.loc['매출채권회전일수', '값'] + ratio.loc['재고자산회전일수', '값'] - ratio.loc['매입채무회전일수', '값']
     ratio['값'] = round(ratio['값'], 2)
+    ratio.reset_index()
+
     return ratio
 
 @router.get("/{code}/profile")
