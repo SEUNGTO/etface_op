@@ -331,7 +331,7 @@ def get_ratio(data, code, n_cu) :
         
     ]
     ratio = pd.DataFrame(ratio, columns = ['지표명', '값'])
-    ratio.loc['현금순환주기', '값'] = ratio.loc['매출채권회전일수', '값'] + ratio.loc['재고자산회전일수', '값'] - ratio.loc['매입채무회전일수', '값']
+    # ratio.loc['현금순환주기', '값'] = ratio.loc['매출채권회전일수', '값'] + ratio.loc['재고자산회전일수', '값'] - ratio.loc['매입채무회전일수', '값']
     ratio['값'] = round(ratio['값'], 2)
     return ratio
 
