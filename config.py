@@ -7,17 +7,35 @@ from google.oauth2.service_account import Credentials
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.config import Config
+import pytz
+from datetime import datetime, timedelta
+
+# 1. Timezone 설정 : 서울
+tz = pytz.timezone('Asia/Seoul')
+
+
+# 2. 기준일자 설정
+"""
+new_date : 오늘 일자(yyyy-mm-dd)
+old_date : 오늘로부터 7일 전(yyyy-mm-dd)
+"""
+now = datetime.now(tz)
+new_date = now.strftime('%Y%m%d')
+old_date = (now - timedelta(days=7)).strftime('%Y%m%d')
+
+def get_fresh_config() :
+    return Config('.env')
 
 logging.basicConfig(level = logging.INFO)
 logger = logging.getLogger(__name__)
-config = Config('.env')
+config = get_fresh_config()
 
 wallet_location = os.path.join(os.getcwd(), 'key')
 STORAGE_NAME = config('STORAGE_NAME')
 WALLET_FILE = config('WALLET_FILE')
 
 if not os.path.exists(WALLET_FILE) :
-    test = {
+    drive = {
         "type": config('GCP_TYPE'),
         "project_id": config('GCP_PROJECT_ID'),
         "private_key_id": config('GCP_PRIVATE_KEY_ID'),
@@ -31,7 +49,7 @@ if not os.path.exists(WALLET_FILE) :
         "universe_domain": config('GCP_UNIV_DOMAIN')
     }
 
-    credentials = Credentials.from_service_account_info(test)
+    credentials = Credentials.from_service_account_info(drive)
     client = storage.Client(credentials=credentials)
     bucket = client.get_bucket(STORAGE_NAME)
     blob = bucket.get_blob(WALLET_FILE)
@@ -52,7 +70,6 @@ pool = oracledb.create_pool(
     wallet_location=wallet_location,
     wallet_password=config('DB_WALLET_PASSWORD'),
     min=1, max = 5, increment=1)
-
 
 def get_connection():
     connection = pool.acquire()

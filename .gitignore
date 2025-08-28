@@ -1,11 +1,28 @@
 # Logs
-logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# frontend 소스 제외
+/frontend/src/
+/frontend/node_modules/
+/frontend/package.json
+/frontend/package-lock.json
+/frontend/yarn.lock
+/frontend/svelte.config.js
+/frontend/.env
+/frontend/.env.product
+/frontend/.svelte-kit/
+/frontend/tailwind.config.js
+/frontend/jsconfig.json
+/frontend/eslint.config.js
+/frontend/eslint.config.js
+/frontend/.prettierignore
+/frontend/.prettierrc
+/frontend/.npmrc
 
 node_modules
 key
@@ -26,3 +43,6 @@ Wallet_appdb.zip
 *.ptc
 __pycache__
 *.env
+
+# test용 파일
+test.py
