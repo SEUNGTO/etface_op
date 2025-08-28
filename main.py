@@ -44,7 +44,7 @@ def index():
 
 @app.get("/{full_path:path}")
 async def spa_catch_all(full_path: str):
-    return FileResponse("dist/index.html")
+    return FileResponse("frontend/dist/index.html")
 
 
 @app.get("/codelist")
