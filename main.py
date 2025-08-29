@@ -20,8 +20,7 @@ telegram_dict = telegramConfig
 app = FastAPI()
 
 origins = [
-    "*",
-    # "http://3.38.10.222:8000"
+    "https://etface.kr",
 ]
 
 app.add_middleware(
