@@ -20,7 +20,8 @@ telegram_dict = telegramConfig
 app = FastAPI()
 
 origins = [
-    # "*",
+    "http://localhost",
+    "http://localhost:5173",
     "https://etface.kr",
 ]
 
