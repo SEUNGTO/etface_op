@@ -36,7 +36,7 @@ async def get_stock_content(db: Session = Depends(get_db), code: str = "") :
 
         print(f"ERROR : {e} | CODE : {code} | DOMAIN : stock_router")
 
-        # raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 async def get_stock_research(db: Session = Depends(get_db), code: str = ""):
     # 나중에 쿼리 튜닝 필요
