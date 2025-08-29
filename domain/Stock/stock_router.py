@@ -33,20 +33,10 @@ async def get_stock_content(db: Session = Depends(get_db), code: str = "") :
         }
 
     except Exception as e:
-        import pytz
-        from datetime import datetime
-        tz = pytz.timezone('Asia/Seoul')
-        error = pd.DataFrame({'error' : e, 'code' : code, 'date' : datetime.now(tz).timestamp(), 'domain' : 'stock_router'}, index = [0])
-        error.to_sql(
-            'error',
-            con = db.connection(),
-            if_exists='append',
-            index=False,
-            dtype = {
-                'date' :Float(precision=53).with_variant(ORACLE_FLOAT(binary_precision=173), 'oracle'),
-            })
 
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"ERROR : {e} | CODE : {code} | DOMAIN : stock_router")
+
+        # raise HTTPException(status_code=500, detail=str(e))
 
 async def get_stock_research(db: Session = Depends(get_db), code: str = ""):
     # 나중에 쿼리 튜닝 필요
