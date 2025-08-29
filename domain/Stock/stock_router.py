@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from modules.telegram import *
 import html
+from sqlalchemy import Float
+from sqlalchemy.dialects.oracle import FLOAT as ORACLE_FLOAT
 
 router = APIRouter(
     prefix="/Stock",
@@ -34,8 +36,15 @@ async def get_stock_content(db: Session = Depends(get_db), code: str = "") :
         import pytz
         from datetime import datetime
         tz = pytz.timezone('Asia/Seoul')
-        error = pd.DataFrame({'error' : e, 'code' : code, 'date' : datetime.now(tz).timestamp(),'domain' : 'stock_router'}, index = [0])
-        error.to_sql('error', con = db.connection(), if_exists='append', index=False)
+        error = pd.DataFrame({'error' : e, 'code' : code, 'date' : datetime.now(tz).timestamp(), 'domain' : 'stock_router'}, index = [0])
+        error.to_sql(
+            'error',
+            con = db.connection(),
+            if_exists='append',
+            index=False,
+            dtype = {
+                'date' :Float(precision=53).with_variant(ORACLE_FLOAT(binary_precision=173), 'oracle'),
+            })
 
         raise HTTPException(status_code=500, detail=str(e))
 
