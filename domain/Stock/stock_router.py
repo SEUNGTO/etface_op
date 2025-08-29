@@ -34,7 +34,7 @@ async def get_stock_content(db: Session = Depends(get_db), code: str = "") :
         import pytz
         from datetime import datetime
         tz = pytz.timezone('Asia/Seoul')
-        error = pd.DataFrame({'error' : e, 'code' : code, 'date' : datetime.now(tz).timestamp(),'domain' : 'stock_router'})
+        error = pd.DataFrame({'error' : e, 'code' : code, 'date' : datetime.now(tz).timestamp(),'domain' : 'stock_router'}, index = [0])
         error.to_sql('error', con = db.connection(), if_exists='append', index=False)
 
         raise HTTPException(status_code=500, detail=str(e))
