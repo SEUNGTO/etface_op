@@ -20,6 +20,7 @@ telegram_dict = telegramConfig
 app = FastAPI()
 
 origins = [
+    # "*",
     "https://etface.kr",
 ]
 
