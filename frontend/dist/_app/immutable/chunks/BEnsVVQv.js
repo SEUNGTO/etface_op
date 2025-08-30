@@ -1,0 +1,6 @@
+import{p as g}from"./BfaWIHaz.js";import"./tcBdRf03.js";import{s as t}from"./CpJTWzIK.js";import{Q as d,R as f,$ as l,N as w,s as a,n as h,b as y,O as u}from"./CY7WyKjs.js";const $=g;var v=f(u(`<meta name="description"/> <meta name="keywords" content="ETF, Stock, Finance, 투자"/> <meta name="robots" content="index, follow"/> <meta property="og:title"/> <meta property="og:description"/> <meta property="og:url"/> <meta property="og:type" content="website"/> <meta name="google-adsense-account" content="ca-pub-4988668393559418"/> <script async><\/script> <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', "G-BBKX235MYF", { page_path: window.location.pathname });
+    <\/script> <meta name="naver-site-verification" content="c9dfa8f598a66c29eddfa4315f8e80a377fd7a90"/>`,1));function B(_){let i="ETFace",e="어디서 볼 수 없던 ETF퀀트투자 데이터. 과거 수익률은 설명할 수 없는, ETF의 진짜 가치를 찾기 위한 각종 정보를 보실 수 있어요.";d(p=>{var n=v();l.title="ETFace";var o=w(n);t(o,"content",e);var r=a(o,6);t(r,"content",i);var s=a(r,2);t(s,"content",e);var c=a(s,2);t(c,"content","https://etface.kr");var m=a(c,6);t(m,"src","https://www.googletagmanager.com/gtag/js?id=G-BBKX235MYF"),h(4),y(p,n)})}export{B as M,$ as p};
