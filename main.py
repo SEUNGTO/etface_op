@@ -43,14 +43,14 @@ app.mount("/_app", StaticFiles(directory="frontend/dist/_app"), name="_app")
 def index():
     return FileResponse("frontend/dist/index.html")
 
-# @app.get("/{full_path:path}")
-# async def spa_catch_all(full_path: str):
-#     return FileResponse("frontend/dist/index.html")
 
-# @app.get("/robots.txt")
-# def robots():
-#     return FileResponse("frontend/dist/robots.txt")
+@app.get("/robots.txt")
+def robots():
+    return FileResponse("frontend/dist/robots.txt")
 
+@app.get("/{full_path:path}")
+async def spa_catch_all(full_path: str):
+    return FileResponse("frontend/dist/index.html")
 
 @app.get("/codelist")
 def get_code_list(db: Session = Depends(get_db)):
