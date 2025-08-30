@@ -45,7 +45,7 @@ def index():
 
 
 @app.get("/robots.txt")
-def robots():
+async def robots():
     return FileResponse("frontend/dist/robots.txt")
 
 @app.get("/{full_path:path}")
