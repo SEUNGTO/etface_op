@@ -39,7 +39,7 @@ async def get_stock_content(db: Session = Depends(get_db), code: str = "") :
         raise HTTPException(status_code=500, detail=str(e))
 
 async def get_stock_research(db: Session = Depends(get_db), code: str = ""):
-    # 나중에 쿼리 튜닝 필요
+
     try :
         data = pd.read_sql('SELECT * FROM research', con = db.connection())
         data = data.drop_duplicates()
@@ -106,16 +106,14 @@ async def get_stock_news(db: Session = Depends(get_db), code: str = ""):
     try :
         url = f'https://openapi.naver.com/v1/search/news.json'
         q = f"""
-        SELECT *
-        FROM (SELECT stock_name
-                FROM etf_base_table
-                WHERE stock_code = :code)
-        WHERE ROWNUM <= 1
+        SELECT "종목명"
+        FROM COMPANY_INFO
+        WHERE TO_CHAR("종목코드") = :code
         """
         keyword = pd.read_sql(q, con = db.connection(), params = {'code' : code})
 
         if len(keyword) > 0 :
-            keyword = keyword['stock_name'].to_list()[0]
+            keyword = keyword['종목명'].to_list()[0]
 
             params = {'query': keyword,
                       'display': '50'}
@@ -136,11 +134,18 @@ async def get_stock_news(db: Session = Depends(get_db), code: str = ""):
             newsData.sort_values('날짜', ascending=False)
 
             return newsData.reset_index(drop=True).to_json(orient='split')
+        else :
+            return {
+                '기사제목' : None,
+                '날짜' : None,
+                '링크' : None,
+            }
 
     except oracledb.DatabaseError as e:
         logger.error(f'[get_stock_news]Database operation failed: {e}')
 
 async def get_stock_price(db: Session = Depends(get_db), code: str = ""):
+
 
     try :
         tz = pytz.timezone('Asia/Seoul')
