@@ -48,6 +48,10 @@ def index():
 async def robots():
     return FileResponse("frontend/dist/robots.txt")
 
+@app.get("/ads.txt")
+async def robots():
+    return FileResponse("frontend/dist/ads.txt")
+
 @app.get("/{full_path:path}")
 async def spa_catch_all(full_path: str):
     return FileResponse("frontend/dist/index.html")
