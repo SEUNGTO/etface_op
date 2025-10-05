@@ -251,6 +251,7 @@ async def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
         ratio['매출채권회전일수'] = round(365 / (data.loc['매출액'] / data.loc['매출채권']), 2)
         ratio['재고자산회전일수'] = round(365 / (data.loc['매출액'] / data.loc['재고자산']), 2)
         ratio['매입채무회전일수'] = round(365 / (data.loc['매출액'] / data.loc['매입채무']), 2)
+        ratio['현금순환주기(CCC)'] = ratio['매출채권회전일수'] + ratio['재고자산회전일수'] - ratio['매입채무회전일수']
 
         data.index.name = '계정명'
         data = data.reset_index()
