@@ -272,8 +272,6 @@ async def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
             'ratio': None,
         }
 
-
-
 async def get_etf_deposit(db: Session = Depends(get_db), code:str = ""):
     try :
         q1 = f"""
@@ -349,7 +347,7 @@ async def get_etf_change(db: Session = Depends(get_db), code: str = ""):
         data['diff_ratio'] = round(data['diff_ratio'], 2)
 
         data.columns = ['종목명', '비중', '가격', '수량', '최근 비중(%)', '일주일 전 비중(%)', '비중 차이(%p)', '증감액']
-        data = data.sort_values('증감액(원)', ascending=False)
+        data = data.sort_values('증감액', ascending=False)
         data.dropna(inplace = True)
         return data.reset_index(drop=True).to_json(orient='split')
 
@@ -384,7 +382,6 @@ async def get_etf_by_industry(db: Session = Depends(get_db), code: str = ""):
         result = pd.concat([result, tmp])
 
     return result.to_json(orient='split')
-
 
 def standardize_price(data):
     _med = data.median()
