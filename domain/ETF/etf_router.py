@@ -273,36 +273,6 @@ async def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
         }
 
 
-# def get_ratio(data, code, n_cu) :
-#     data = data.set_index('acount_name')
-#     price = fdr.DataReader(f"NAVER:{code}")['Close'].tail(1).values[0]
-#     ratio = [
-#         ['순이익률(%)', data.loc['당기순이익', 'amount'] / data.loc['매출액', 'amount'] * 100],
-#         ['ROE(자기자본이익률, %)', data.loc['당기순이익', 'amount'] / data.loc['자본총계', 'amount'] * 100],
-#         ['ROA(총자산이익률, %)', data.loc['당기순이익', 'amount'] / data.loc['자산총계', 'amount'] * 100],
-#         ['부채비율(%)', data.loc['부채총계', 'amount'] / data.loc['자본총계', 'amount'] * 100],
-#         ['유동비율(%)', data.loc['유동자산', 'amount'] / data.loc['유동부채', 'amount'] * 100],
-#         ['EPS', data.loc['당기순이익', 'amount'] / n_cu],
-#         ['BPS', data.loc['자본총계', 'amount'] / n_cu],
-#         ['PER', price/(data.loc['당기순이익', 'amount'] / n_cu)],
-#         ['PBR', price/(data.loc['자본총계', 'amount'] / n_cu)],
-#
-#         ['매출채권회전율', data.loc['매출액', 'amount']/data.loc['매출채권', 'amount']],
-#         ['재고자산회전율', data.loc['매출액', 'amount']/data.loc['재고자산', 'amount']],
-#         ['매입채무회전율', data.loc['매출액', 'amount']/data.loc['매입채무', 'amount']],
-#
-#         ['매출채권회전일수', 365/(data.loc['매출액', 'amount']/data.loc['매출채권', 'amount'])],
-#         ['재고자산회전일수', 365/(data.loc['매출액', 'amount']/data.loc['재고자산', 'amount'])],
-#         ['매입채무회전일수', 365/(data.loc['매출액', 'amount']/data.loc['매입채무', 'amount'])],
-#
-#     ]
-#     ratio = pd.DataFrame(ratio, columns = ['지표명', '값'])
-#     ratio = ratio.set_index('지표명')
-#     ratio.loc['현금순환주기(CCC)', '값'] = ratio.loc['매출채권회전일수', '값'] + ratio.loc['재고자산회전일수', '값'] - ratio.loc['매입채무회전일수', '값']
-#     ratio['값'] = round(ratio['값'], 2)
-#     ratio = ratio.reset_index()
-#     return ratio
-
 
 async def get_etf_deposit(db: Session = Depends(get_db), code:str = ""):
     try :
@@ -378,7 +348,7 @@ async def get_etf_change(db: Session = Depends(get_db), code: str = ""):
         data['past_ratio'] = round(data['past_ratio'], 2)
         data['diff_ratio'] = round(data['diff_ratio'], 2)
 
-        data.columns = ['종목명', '비중', '가격', '수량', '최근 비중(%)', '일주일 전 비중(%)', '비중 차이(%p)', '증감액(원)']
+        data.columns = ['종목명', '비중', '가격', '수량', '최근 비중(%)', '일주일 전 비중(%)', '비중 차이(%p)', '증감액']
         data = data.sort_values('증감액(원)', ascending=False)
         data.dropna(inplace = True)
         return data.reset_index(drop=True).to_json(orient='split')
