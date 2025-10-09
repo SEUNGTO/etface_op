@@ -97,7 +97,7 @@ async def get_high_quality(db: Session = Depends(get_db)):
         con3 = ratio['ROE(자기자본이익률, %)'] > 6
 
         ratio = ratio[con1 & con2 & con3].sort_values('ROE(자기자본이익률, %)', ascending=False)[
-            ['ETF코드', 'ROE(자기자본이익률, %)', '현금순환주기(CCC)', '부채비율(%)']]
+            ['ETF코드', 'ROE(자기자본이익률, %)', '현금순환주기(CCC)', '유동비율(%)']]
         ratio = ratio.set_index('ETF코드').join(code_table.set_index('ETF코드'))
         ratio = ratio.reset_index(drop=True)
         ratio.columns = ['ROE(자기자본이익률, %)', '현금순환주기(CCC)', '유동비율(%)', 'ETF명']
