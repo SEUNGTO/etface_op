@@ -179,11 +179,11 @@ async def get_active_etf_newitem(db: Session = Depends(get_db)):
         result = {
             'summary': {
                 'stock': {
-                    'cnt': int(stock_cnt),
+                    'cnt': int(stock_cnt) if pd.notna(stock_cnt) else 0,
                     'item': pop_stock.reset_index(drop=True).to_json(orient='records')
                 },
                 'etf': {
-                    'cnt': int(etf_cnt),
+                    'cnt': int(etf_cnt) if pd.notna(etf_cnt) else 0,
                     'item': act_etf.reset_index(drop=True).to_json(orient='records')
                 }
             },
@@ -238,11 +238,11 @@ async def get_active_etf_dropitem(db: Session = Depends(get_db)):
         result = {
             'summary': {
                 'stock': {
-                    'cnt': int(stock_cnt),
+                    'cnt': int(stock_cnt) if pd.notna(stock_cnt) else 0,
                     'item': pop_stock.reset_index(drop=True).to_json(orient='records')
                 },
                 'etf': {
-                    'cnt': int(etf_cnt),
+                    'cnt': int(etf_cnt) if pd.notna(etf_cnt) else 0,
                     'item': act_etf.reset_index(drop=True).to_json(orient='records')
                 }
             },

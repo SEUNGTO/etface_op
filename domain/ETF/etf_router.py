@@ -4,6 +4,7 @@ import FinanceDataReader as fdr
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from modules.telegram import *
+import numpy as np
 
 router = APIRouter(
     prefix="/ETF",
@@ -225,32 +226,48 @@ async def get_etf_finance(db: Session = Depends(get_db), code: str = ""):
             '자본금', '이익잉여금', '자본총계',
             '매출액', '영업이익', '법인세차감전 순이익', '당기순이익(손실)',
         ]
-        data = data.loc[index]
+        idx = [i for i in index if i in data.index]
+        data = data.loc[idx]
+        
 
         q = """SELECT "CU수량" FROM etf_info WHERE TO_CHAR("단축코드") = :code"""
         n_cu = pd.read_sql(q, con=engine, params={'code': code})
         n_cu = n_cu['CU수량'].values[0]
         price = fdr.DataReader(f"NAVER:{code}")['Close'].tail(1).values[0]
+        
+        sales = data.T.get('매출액', np.nan)
+        net_profit = data.T.get('당기순이익(손실)', np.nan)
+        
+        current_asset = data.T.get('유동자산', np.nan)
+        current_liabilty = data.T.get('유동부채', np.nan)
+
+        liability = data.T.get('부채총계', np.nan)
+        capital = data.T.get('자본총계', np.nan)
+        asset = data.T.get('자산총계', np.nan)
+
+        payable = data.T.get('매입채무', np.nan)
+        receivable = data.T.get('매출채권', np.nan)
+        inventory = data.T.get('재고자산', np.nan)
 
         ratio = pd.DataFrame()
-        ratio['순이익률(%)'] = round(data.loc['당기순이익(손실)'] / data.loc['매출액'] * 100, 2)
-        ratio['ROE(자기자본이익률, %)'] = round(data.loc['당기순이익(손실)'] / data.loc['자본총계'] * 100, 2)
-        ratio['ROA(총자산이익률, %)'] = round(data.loc['당기순이익(손실)'] / data.loc['자산총계'] * 100, 2)
-        ratio['부채비율(%)'] = round(data.loc['부채총계'] / data.loc['자본총계'] * 100, 2)
-        ratio['유동비율(%)'] = round(data.loc['유동자산'] / data.loc['유동부채'] * 100, 2)
+        ratio['순이익률(%)'] = round(net_profit / sales * 100, 2)
+        ratio['ROE(자기자본이익률, %)'] = round(net_profit / capital * 100, 2)
+        ratio['ROA(총자산이익률, %)'] = round(net_profit / asset * 100, 2)
+        ratio['부채비율(%)'] = round(liability / capital * 100, 2)
+        ratio['유동비율(%)'] = round(current_asset / current_liabilty * 100, 2)
 
-        ratio['EPS'] = round(data.loc['당기순이익(손실)'] / int(n_cu), 0)
-        ratio['BPS'] = round(data.loc['자본총계'] / int(n_cu), 0)
-        ratio['PER'] = round(price / (data.loc['당기순이익(손실)'] / int(n_cu)), 2)
-        ratio['PBR'] = round(price / (data.loc['자본총계'] / int(n_cu)), 2)
+        ratio['EPS'] = round(net_profit / int(n_cu), 0)
+        ratio['BPS'] = round(capital / int(n_cu), 0)
+        ratio['PER'] = round(price / (net_profit / int(n_cu)), 2)
+        ratio['PBR'] = round(price / (capital / int(n_cu)), 2)
 
-        ratio['매출채권회전율'] = round(data.loc['매출액'] / data.loc['매출채권'], 2)
-        ratio['재고자산회전율'] = round(data.loc['매출액'] / data.loc['재고자산'], 2)
-        ratio['매입채무회전율'] = round(data.loc['매출액'] / data.loc['매입채무'], 2)
+        ratio['매출채권회전율'] = round(sales / receivable, 2)
+        ratio['재고자산회전율'] = round(sales / inventory, 2)
+        ratio['매입채무회전율'] = round(sales / payable, 2)
 
-        ratio['매출채권회전일수'] = round(365 / (data.loc['매출액'] / data.loc['매출채권']), 2)
-        ratio['재고자산회전일수'] = round(365 / (data.loc['매출액'] / data.loc['재고자산']), 2)
-        ratio['매입채무회전일수'] = round(365 / (data.loc['매출액'] / data.loc['매입채무']), 2)
+        ratio['매출채권회전일수'] = round(365 / (sales / receivable), 2)
+        ratio['재고자산회전일수'] = round(365 / (sales / inventory), 2)
+        ratio['매입채무회전일수'] = round(365 / (sales / payable), 2)
         ratio['현금순환주기(CCC)'] = ratio['매출채권회전일수'] + ratio['재고자산회전일수'] - ratio['매입채무회전일수']
 
         data.index.name = '계정명'
