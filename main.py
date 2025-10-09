@@ -12,6 +12,7 @@ from domain.ETF import etf_router
 from domain.Stock import stock_router
 from domain.Home import home_router
 from domain.Market import market_router
+from domain.Lab import lab_router
 
 # 1. 기본 설정값
 telegram_dict = telegramConfig
@@ -36,6 +37,7 @@ app.include_router(etf_router.router)
 app.include_router(stock_router.router)
 app.include_router(home_router.router)
 app.include_router(market_router.router)
+app.include_router(lab_router.router)
 
 app.mount("/_app", StaticFiles(directory="frontend/dist/_app"), name="_app")
 
