@@ -174,8 +174,8 @@ async def get_active_etf_newitem(db: Session = Depends(get_db)):
                                                                    'count_change_stock']].drop_duplicates()
         act_etf.columns = ['ETF명', '투입금액', '변경종목수']
 
-        data = data[['etf_name', 'stock_name', 'recent_ratio', 'recent_amount', 'count_change_stock']]
-        data.columns = ['ETF명', '종목명', '비중', '금액', '변경종목수']
+        data = data[['etf_name', 'count_change_stock', 'stock_name', 'recent_ratio', 'recent_amount']]
+        data.columns = ['ETF명', '변경종목수', '종목명', '비중', '금액', ]
         data = data.sort_values('비중', ascending=False)
 
         result = {
@@ -235,8 +235,8 @@ async def get_active_etf_dropitem(db: Session = Depends(get_db)):
                                                                    'count_change_stock']].drop_duplicates()
         act_etf.columns = ['ETF명', '투입금액', '변경종목수']
 
-        data = data[['etf_name', 'stock_name', 'past_ratio', 'past_amount', 'count_change_stock']]
-        data.columns = ['ETF명', '종목명', '비중', '금액', '변경종목수']
+        data = data[['etf_name', 'count_change_stock','stock_name', 'past_ratio', 'past_amount']]
+        data.columns = ['ETF명', '변경종목수', '종목명', '비중', '금액', ]
         data = data.sort_values('비중', ascending=False)
 
         result = {
