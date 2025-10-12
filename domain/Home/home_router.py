@@ -162,6 +162,8 @@ async def get_active_etf_newitem(db: Session = Depends(get_db)):
         data = data.join(data.groupby('etf_code')['etf_name'].count(), rsuffix='_count').rename(
             columns={'etf_name_count': 'count_change_stock'})
 
+        data = data.sort_values('recent_amount', ascending=False)
+
         # summary 정보
         stock_cnt = data['count'].max()
         pop_stock = data.loc[data['count'] == stock_cnt, ['stock_name', 'total_amount_for_stock']].drop_duplicates()
@@ -220,6 +222,8 @@ async def get_active_etf_dropitem(db: Session = Depends(get_db)):
             columns={'past_amount_total': 'total_amount_in_etf'})
         data = data.join(data.groupby('etf_code')['etf_name'].count(), rsuffix='_count').rename(
             columns={'etf_name_count': 'count_change_stock'})
+
+        data = data.sort_values('past_amount', ascending=False)
 
         # summary 정보
         stock_cnt = data['count'].max()
